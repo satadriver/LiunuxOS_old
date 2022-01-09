@@ -1,0 +1,1 @@
+exe2bin.exe %1 %1.com

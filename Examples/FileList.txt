@@ -1,0 +1,304 @@
+LIST OF EXAMPLE PROGRAMS                     (FileList.txt)
+
+The programs in this list are supplied with the book: 
+Assembly Language for Intel-Based Computers, 4th Edition
+by Kip R. Irvine. Prentice-Hall Publishing, 2002.
+
+Last update: 4/23/02
+
+\ (Samples root)
+	b16.asm	  	(blank 16-bit program template)
+	b32.asm   	(blank 32-bit program template)
+	FileList.txt 	(this file)
+
+\ch03:
+	AddSub.asm
+	AddSub2.asm
+	AddSubR.asm
+	AddSubAlt.asm
+	DataDef.asm
+	template.asm
+	
+\ch04:
+	AddSub3.asm
+	CopyStr.asm
+	Moves.asm
+	Operator.asm
+	Pointers.asm
+	SumArray.asm
+	
+\ch05:
+	RevStr.asm	
+	Stack.asm
+	Sum1.asm
+	Sum2.asm
+	TestLib.asm
+	
+\ch06:
+	ArryScan.asm
+	Encrypt.asm
+	Finite.asm
+	Loopnz.asm
+	ProcTble.asm
+	Regist.asm
+	SetCur.asm
+	
+\ch07:
+	Bmult.asm
+	Divide32.asm
+	Express.asm
+	ExtAdd.asm
+	Multiply.asm
+	MultiShf.asm
+	WriteBin.asm
+	
+\ch08:
+	AddTwo.asm
+	ArrySum.asm
+	CSum.asm
+	Endless.asm
+	Fact.asm
+	Params.asm
+	Recurse.asm
+	Reglist.asm
+	Swap.asm
+	
+\ch08\ModSum:
+	_arrysum.asm
+	_display.asm
+	_prompt.asm
+	Sum_main.asm
+	sum.inc
+	readme.txt
+	make32.bat
+
+\ch09:
+	Cmpsb.asm
+	Compare.asm
+	CopyStr.asm
+	Length.asm
+	Mult.asm
+	Table.asm
+	Table2.asm
+	Trim.asm
+	Ucase.asm
+	
+\ch09\Bsearch:
+	B_main.asm
+	Bsearch.asm
+	Bsearch.inc
+	Bsort.asm
+	FillArry.asm
+	PrtArray.asm
+	readme.txt
+	make32.bat
+	
+\ch10:
+	AllPoints.asm
+	Fibon.asm
+	HelloNew.asm
+	List.asm
+	Macro1.asm
+	Macro2.asm
+	Macro3.asm
+	MacTest.asm
+	Repeat.asm
+	ShowTime.asm
+	Struct1.asm
+	Struct2.asm
+	Union.asm
+	Walk.asm
+	Wraps.asm
+	make16.bat
+	readme.txt
+	
+\ch11:
+	AppendFile.asm
+	Console1.asm
+	Console2.asm
+	Keybd.asm
+	output.txt
+	ReadConsole.asm
+	ReadFile.asm
+	Scroll.asm
+	ShowTime.asm
+	Timer.asm
+	TimingLoop.asm
+	WriteColors.asm
+	WriteFile.asm
+
+\ch11\WinApp:
+	WinApp.asm
+	WinApp.exe
+	make32.bat
+	readme.txt
+	
+\ch12\BorlandCPP\LongRand
+	LongRand.asm
+	main.cpp
+	Borland workspace files: 
+		longrand.DSW 
+		longrand.csm 
+		longrand.exe 
+		longrand.ide
+		longrand.mbt
+		longrand.mrt
+		LONGRAND.OBJ
+		longrand.r$p
+		longrand.~de	
+
+\ch12\BorlandCPP\ReadSec
+	main,cpp 
+	ReadSec.asm 
+	ReadSec.obj
+	Borland workspace files: 
+		ex1,DSW
+		ex1.csm
+		ex1.exe
+		Ex1.ide
+		ex1.mbt
+		ex1.mrt
+		EX1.PIF
+		ex1.r$p
+		EX1.TR
+		Ex1.~de
+
+\ch12\strings
+	Strings.cpp
+	readme.txt
+	Visual C++ Workspace files: 
+		strings.dsp
+		strings.dsw
+		strings.ncb
+		strings.opt
+		strings.plg
+
+\ch12\strings\debug
+	strings.asm
+	strings.exe
+	strings.ilk
+	strings.obj
+	vc60.idb
+	vc60.pdb
+	
+\ch12VisualCPP
+	Visual C++ Workspace files: 
+		VisualCPP.dsw
+		VisualCPP.ncb
+		VisualCPP.opt
+
+\ch12\VisualCPP\Addem
+	addem.asm
+	addMain.cpp
+	Visual C++ Workspace files: 
+		Addem.dsp
+		Addem.dsw
+		Addem.ncb
+		ADDEM.obj
+		Addem.opt
+		Addem.plg
+	
+\ch12\VisualCPP\ArraySum
+	ArraySum.cpp
+	ArraySum.asm
+	Visual C++ Workspace files: 
+		ArraySum.dsw
+		ArraySum.ncb 
+		ArraySum.opt
+		ArraySum.plg
+
+\ch12\VisualCPP\Encode
+	Encode.cpp
+	Encode2.cpp
+	Translat.cpp
+	Translat.h
+	infile.txt
+	outfile.txt
+	Visual C++ Workspace files: 
+		Encode.dsp
+		Encode.dsw
+		Encode.ncb
+		Encode.opt
+		Encode.plg
+
+\ch12\VisualCPP\FindArray
+	FindArr.cpp
+	FindArr.h
+	main.asm
+	main.cpp
+	Scasd.asm
+	Visual C++ Workspace files: 
+		FindArray.dsp, FindArray.plg
+
+\ch12\VisualCPP\InlineTest
+	test1.cpp
+	Visual C++ Workspace files: 
+		InlineTest.dsp
+		InlineTest.plg
+
+\ch13:
+	Binfile.asm
+	DateTime.asm
+	Encrypt.asm
+	Fileio.asm
+	Hello.asm
+	Keybd.asm
+	Readfile.asm
+	long_filename.txt
+	my_output_file.txt
+	my_text_file.txt
+
+\ch14:
+	Cluster.asm
+	DiskSpc.asm
+	Sector32.asm
+
+\ch15:
+	ClearKbd.asm
+	Colorstr.asm
+	Colorst2.asm
+	Delay.asm
+	Keybd.asm
+	Mode13.asm
+	Mouse.asm
+	Pixel1.asm
+	Pixel2.asm
+	TextWin.asm
+
+\ch16:
+	CtrlBrk.asm
+	MultCode.asm
+	MultData.asm
+	MultiSeg.asm
+	No_Reset.asm
+	No_Reset.com
+	HelloCom.asm
+
+\ch16\Seg2:
+	Seg2.asm
+	Seg2a.asm
+	make16.bat
+
+\ch17:
+	Expr.asm
+	Speaker.asm
+
+\Lib16:
+	Irvine16.asm
+	TestLib.asm
+	Irvine16.inc
+	IRVINE16.LIB
+	LIB.EXE
+	asm16.bat
+	make16.bat
+	makeLib.bat
+
+\Lib32:
+	Irvine32.asm
+	LibTest.asm
+	Irvine32.inc
+	Irvine32.lib
+	Macros.inc
+	make32.bat
+	makeLib.bat
+	SmallWin.inc
