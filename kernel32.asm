@@ -165,6 +165,7 @@ push dword ptr KERNEL_DLL_BASE
 call __getProcAddress
 add esp,8
 mov ds:[ebx + _kscreenProtect],eax
+mov dword ptr ds:[TIMER0_FREQUENCY_ADDR],SYSTEM_TIMER0_FACTOR
 
 mov eax,ebx
 add eax,offset _kCmosAlarmProcFz
