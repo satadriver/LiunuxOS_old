@@ -222,6 +222,7 @@ __initVesa proc
 	mov es:[_mouseBorderSize],eax
 	
 	call __getGraphCharBase
+	mov eax,1
 
 	_initVideoEnd:
 	add sp,40h
@@ -249,6 +250,7 @@ __initVesa proc
 	call __textModeShow16
 	add sp,6
 	
+	mov eax,0
 	jmp _initVideoEnd
 	
 	_initvesaInfoErr db 'init vesa get information error',0ah,0
@@ -289,6 +291,9 @@ __initVideo proc
 	_getvideoselect:
 	mov ah,0
 	int 16h
+	
+	cmp al,'0'
+	jz _videotextselect
 	cmp al,'1'
 	jz _video1select
 	cmp al,'2'
@@ -297,11 +302,21 @@ __initVideo proc
 	jz _video3select
 	cmp al,'4'
 	jz _video4select
-	cmp al,'0'
-	jz _getvideoselect
-	jz _videotextselect
+
 	cmp al,'5'
 	jz _video5select
+	
+	cmp al,'6'
+	jz _video6select
+	cmp al,'7'
+	jz _video7select
+	cmp al,'8'
+	jz _video8select
+	cmp al,'9'
+	jz _video9select
+	cmp al,'a'
+	jz _video10select
+	
 	jmp _getvideoselect
 
 	_videotextselect:
@@ -323,8 +338,30 @@ __initVideo proc
 	mov word ptr es:[_videoMode],VIDEO_MODE_11F
 	jmp _selectVideoEnd
 	
+	_video6select:
+	mov word ptr es:[_videoMode],VIDEO_MODE_319
+	jmp _selectVideoEnd
+	
+	_video7select:
+	mov word ptr es:[_videoMode],VIDEO_MODE_320
+	jmp _selectVideoEnd
+	_video8select:
+	mov word ptr es:[_videoMode],VIDEO_MODE_321
+	jmp _selectVideoEnd
+	_video9select:
+	mov word ptr es:[_videoMode],VIDEO_MODE_324
+	jmp _selectVideoEnd
+	_video10select:
+	mov word ptr es:[_videoMode],VIDEO_MODE_326
+	jmp _selectVideoEnd
+	
 	_selectVideoEnd:
 	call __initVesa
+	cmp eax,0
+	jnz __initVideoOver
+	
+	;mov word ptr es:[_videoMode],VIDEO_MODE_321
+	;call __initVesa
 
 	__initVideoOver:
 	add sp,40h
@@ -345,7 +382,13 @@ _videoSelection db 'please select vido mode:',0ah
 				db '2: 800x600x16M',0ah
 				db '3: 1024x768x16M',0ah
 				db '4: 1280x1024x16M',0ah
-				db '5: 1600x1200x16M',0ah,0,0
+				db '5: 1600x1200x16M',0ah
+				
+				db '6: 640x480x16M(vmware virtual machie)',0ah
+				db '7: 800x600x16M(vmware virtual machie)',0ah
+				db '8: 1024x768x16M(vmware virtual machie)',0ah
+				db '9: 1280x1024x16M(vmware virtual machie)',0ah
+				db 'a: 1600x1200x16M(vmware virtual machie)',0ah,0,0
 				
 __initVideo endp
 
