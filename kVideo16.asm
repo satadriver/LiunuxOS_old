@@ -37,7 +37,7 @@ __initVesa proc
 ;		= 1：不清除显示内存
 
 	mov ax,4f02h
-	mov bx,8000h
+	mov bx,0000h
 	or bx,word ptr es:[_videoMode]
 	;mov bx,word ptr es:[_videoMode]
 	int 10h
@@ -344,15 +344,19 @@ __initVideo proc
 	
 	_video7select:
 	mov word ptr es:[_videoMode],VIDEO_MODE_320
+	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
 	jmp _selectVideoEnd
 	_video8select:
 	mov word ptr es:[_videoMode],VIDEO_MODE_321
+	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
 	jmp _selectVideoEnd
 	_video9select:
 	mov word ptr es:[_videoMode],VIDEO_MODE_324
+	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
 	jmp _selectVideoEnd
 	_video10select:
 	mov word ptr es:[_videoMode],VIDEO_MODE_326
+	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
 	jmp _selectVideoEnd
 	
 	_selectVideoEnd:
