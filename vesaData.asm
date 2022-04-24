@@ -53,3 +53,17 @@ VESAInformation struc					;//共256字节
 ;62
 	reserve_2				db 194 dup (?)	;保留
 VESAInformation ends
+
+
+
+
+VESAInfoBlock STRUC
+VESASignature 	dd ?			; 四字节的标志'VESA'
+VESAVersion		dw ? 			; VESA版本号 ，一般是2  
+OEMStringPtr	dd ? 			; OEM串的指针   字符串值
+Capabilities	db 4 dup(?) 	; 视频环境的情况   一般是0x00000001
+VideoModeOffset	dw ?
+VideoModeSeg	dw ?			; 所支持的超级VGA模式的指针   
+TotalMemory		dw ? 			; 板载64K内存块数，0x10000乘以此数可得到视频缓冲区的大小
+Reserved		db 236 dup(?) 	; VgaInfoBlock的剩余   
+VESAInfoBlock ENDS   

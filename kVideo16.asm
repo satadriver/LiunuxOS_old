@@ -3,6 +3,116 @@
 Kernel16 segment para use16
 assume cs:kernel16
 
+
+;AH = 4Fh 超级VGA支持   
+;AL = 00h 返回超级VGA信息   
+;ES:DI = 缓冲区指针 
+
+;AH = 4Fh 超级VGA支持   
+;AL = 01h 返回超级VGA模式信息   
+;CX = 超级VGA模式号（模式号必须为函数00h返回值之一）   
+;ES:DI = 256字节缓冲区指针   
+
+__getVesaMode proc
+	PUSH ECX
+	PUSH EDX
+	PUSH EBX
+	PUSH ESI
+	PUSH EDI
+	PUSH EBP
+	PUSH DS
+	PUSH ES
+	
+	SUB ESP,200H
+	
+	mov ebx,offset _videoTypes
+	
+	MOV AX,kernelData
+	MOV ES,AX
+
+	MOV eDI,offset _videoBlockInfo
+	
+	mov ax,4f00h
+	int 10h
+	
+	cmp ax,4fh
+	JNZ __getVesaModeOver
+	
+	mov eax,es:[edi + VESAInfoBlock.VESASignature]
+	cmp eax,41534556h
+	JNZ __getVesaModeOver
+	
+	MOV SI,ES:[DI + VESAInfoBlock.VideoModeOffset ]
+	MOV AX,ES:[DI + VESAInfoBlock.VideoModeSeg]
+	MOV DS,AX
+	cld
+	
+	__getVesaMode_checkmode:
+	lodsw
+	cmp ax,0
+	jz __getVesaModeOver
+	cmp ax,0ffffh
+	jz __getVesaModeOver
+	mov bp,ax
+	mov cx,ax
+	mov ax,4f01h
+	mov di, offset _videoInfo
+	int 10h
+	cmp ax,4fh
+	jnz __getVesaModeOver
+	movzx ax,es:[di + VESAInformation.BitsPerPixel]
+	cmp ax,24
+	jb __getVesaMode_checkmode
+	mov ax,es:[di + VESAInformation.XRes]
+	cmp ax,800
+	jb __getVesaMode_checkmode
+	cmp ax,1600
+	ja __getVesaMode_checkmode
+	mov dx,ax
+	and dx,0fff0h
+	cmp dx,0
+	jz __getVesaMode_checkmode
+	mov cx,es:[di + VESAInformation.YRes]
+	cmp cx,600
+	jb __getVesaMode_checkmode
+	cmp cx,1200
+	ja __getVesaMode_checkmode
+	mov dx,cx
+	and dx,0fff0h
+	cmp dx,0
+	jz __getVesaMode_checkmode
+	
+	mov es:[ebx+0],bp
+	mov es:[ebx+2],ax
+	mov es:[ebx + 4],cx
+	movzx ax,es:[di + VESAInformation.BitsPerPixel]
+	mov es:[ebx+6],ax
+	
+	add ebx,8
+	mov eax,ebx
+	sub eax,offset _videoTypes
+	cmp eax,64
+	jae __getVesaModeOver
+	jmp __getVesaMode_checkmode
+
+	__getVesaModeOver:
+	mov eax,ebx
+	sub eax,offset _videoTypes
+	shr eax,3
+	
+	ADD ESP,200H
+	POP ES
+	POP DS
+	POP EBP
+	POP EDI
+	POP ESI
+	POP EBX
+	POP EDX
+	POP ECX
+	RET
+__getVesaMode endp
+
+
 __initVesa proc
 	push bp
 	mov bp,sp
@@ -281,6 +391,8 @@ __initVideo proc
 	;mov ax,4f02h
 	;mov bx,3
 	;int 10h
+	
+	call __getVesaMode
 
 	push word ptr 0ah
 	push offset _videoSelection
@@ -302,9 +414,9 @@ __initVideo proc
 	jz _video3select
 	cmp al,'4'
 	jz _video4select
-
 	cmp al,'5'
 	jz _video5select
+	jmp _getvideoselect
 	
 	cmp al,'6'
 	jz _video6select
@@ -320,22 +432,27 @@ __initVideo proc
 	jmp _getvideoselect
 
 	_videotextselect:
-	mov word ptr es:[_videoMode],VIDEO_MODE_3
+	
+	;mov word ptr es:[_videoMode],VIDEO_MODE_3
+	
+	jmp _selectVideoEnd
 	jmp __initVideoOver
 	_video1select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_112
+
+	;mov word ptr es:[_videoMode],VIDEO_MODE_112
 	jmp _selectVideoEnd
 	_video2select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_115
+
+	;mov word ptr es:[_videoMode],VIDEO_MODE_115
 	jmp _selectVideoEnd
 	_video3select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_118
+	;mov word ptr es:[_videoMode],VIDEO_MODE_118
 	jmp _selectVideoEnd
 	_video4select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_11b
+	;mov word ptr es:[_videoMode],VIDEO_MODE_11b
 	jmp _selectVideoEnd
 	_video5select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_11F
+	;mov word ptr es:[_videoMode],VIDEO_MODE_11F
 	jmp _selectVideoEnd
 	
 	_video6select:
@@ -360,6 +477,15 @@ __initVideo proc
 	jmp _selectVideoEnd
 	
 	_selectVideoEnd:
+	sub al,'0'
+	movzx ax,al
+	
+	shl ax,3
+	mov di,offset _videoTypes
+	add di,ax
+	mov dx,word ptr es:[di]
+	mov word ptr es:[_videoMode],dx
+	
 	call __initVesa
 	cmp eax,0
 	jnz __initVideoOver
@@ -381,14 +507,14 @@ __initVideo proc
 	ret
 
 _videoSelection db 'please select vido mode:',0ah
-				db '0: command line',0ah
-				db '1: 640x480x16M',0ah
-				db '2: 800x600x16M',0ah
-				db '3: 1024x768x16M',0ah
-				db '4: 1280x1024x16M',0ah
-				db '5: 1600x1200x16M',0ah
 				
-				db '6: 640x480x16M(vmware virtual machie)',0ah
+				db '0: 800x600x32',0ah
+				db '1: 1024x768x32',0ah
+				db '2: 1280x1024x32',0ah
+				db '3: 1600x1200x32',0ah,0,0
+				
+				db '0: command line',0ah
+				
 				db '7: 800x600x16M(vmware virtual machie)',0ah
 				db '8: 1024x768x16M(vmware virtual machie)',0ah
 				db '9: 1280x1024x16M(vmware virtual machie)',0ah
