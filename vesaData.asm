@@ -67,3 +67,12 @@ VideoModeSeg	dw ?			; 所支持的超级VGA模式的指针
 TotalMemory		dw ? 			; 板载64K内存块数，0x10000乘以此数可得到视频缓冲区的大小
 Reserved		db 236 dup(?) 	; VgaInfoBlock的剩余   
 VESAInfoBlock ENDS   
+
+
+VESAModeInfo struc
+vesaMode		dw ?
+vesaXres		dw ?
+vesaYres		dw ?
+bitsPerPix		db ?
+reserved		db ?
+VESAModeInfo ends

@@ -63,10 +63,13 @@ __getVesaMode proc
 	movzx ax,es:[di + VESAInformation.BitsPerPixel]
 	cmp ax,24
 	jb __getVesaMode_checkmode
+	cmp ax,32
+	ja __getVesaMode_checkmode
+	
 	mov ax,es:[di + VESAInformation.XRes]
 	cmp ax,1024
 	jb __getVesaMode_checkmode
-	cmp ax,2560
+	cmp ax,1600
 	ja __getVesaMode_checkmode
 	mov dx,ax
 	and dx,0fh
@@ -75,7 +78,7 @@ __getVesaMode proc
 	mov cx,es:[di + VESAInformation.YRes]
 	cmp cx,768
 	jb __getVesaMode_checkmode
-	cmp cx,1600
+	cmp cx,1200
 	ja __getVesaMode_checkmode
 	mov dx,cx
 	and dx,0fh
@@ -96,9 +99,14 @@ __getVesaMode proc
 	jmp __getVesaMode_checkmode
 
 	__getVesaModeOver:
+	sub ebx,8
+	
+	mov ebx,offset _videoTypes
+	
+	mov ax,es:[ebx]
+	mov es:[_videoMode],ax
+	
 	mov eax,ebx
-	sub eax,offset _videoTypes
-	shr eax,3
 	
 	ADD ESP,200H
 	POP ES
@@ -382,7 +390,7 @@ __initVideo proc
 	push di
 	push ds
 	push es
-	sub sp,40h
+	sub sp,100h
 
 	mov ax,kernelData
 	mov es,ax
@@ -403,6 +411,7 @@ __initVideo proc
 	_getvideoselect:
 	mov ah,0
 	int 16h
+	jmp _selectVideoEnd
 	
 	cmp al,'0'
 	jz _videotextselect
@@ -432,25 +441,26 @@ __initVideo proc
 	jmp _getvideoselect
 
 	_videotextselect:
-	
 	;mov word ptr es:[_videoMode],VIDEO_MODE_3
-	
 	jmp _selectVideoEnd
 	jmp __initVideoOver
+	
 	_video1select:
-
 	;mov word ptr es:[_videoMode],VIDEO_MODE_112
 	jmp _selectVideoEnd
+	
 	_video2select:
-
 	;mov word ptr es:[_videoMode],VIDEO_MODE_115
 	jmp _selectVideoEnd
+	
 	_video3select:
 	;mov word ptr es:[_videoMode],VIDEO_MODE_118
 	jmp _selectVideoEnd
+	
 	_video4select:
 	;mov word ptr es:[_videoMode],VIDEO_MODE_11b
 	jmp _selectVideoEnd
+	
 	_video5select:
 	;mov word ptr es:[_videoMode],VIDEO_MODE_11F
 	jmp _selectVideoEnd
@@ -463,14 +473,17 @@ __initVideo proc
 	mov word ptr es:[_videoMode],VIDEO_MODE_320
 	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
 	jmp _selectVideoEnd
+	
 	_video8select:
 	mov word ptr es:[_videoMode],VIDEO_MODE_321
 	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
 	jmp _selectVideoEnd
+	
 	_video9select:
 	mov word ptr es:[_videoMode],VIDEO_MODE_324
 	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
 	jmp _selectVideoEnd
+	
 	_video10select:
 	mov word ptr es:[_videoMode],VIDEO_MODE_326
 	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
@@ -490,23 +503,20 @@ __initVideo proc
 	;mov ax,ds:[si]
 	;mov word ptr es:[_videoMode],ax
 	
-	sub al,'0'
-	movzx ax,al
-	shl ax,3
-	mov di,offset _videoTypes
-	add di,ax
-	mov dx,word ptr es:[di]
-	mov word ptr es:[_videoMode],dx
+	;sub al,'0'
+	;movzx ax,al
+	;shl ax,3
+	;mov di,offset _videoTypes
+	;add di,ax
+	;mov dx,word ptr es:[di]
+	;mov word ptr es:[_videoMode],dx
 	
 	call __initVesa
 	cmp eax,0
 	jnz __initVideoOver
-	
-	;mov word ptr es:[_videoMode],VIDEO_MODE_321
-	;call __initVesa
 
 	__initVideoOver:
-	add sp,40h
+	add sp,100h
 	pop es
 	pop ds
 	pop di
