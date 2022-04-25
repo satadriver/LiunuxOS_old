@@ -62,49 +62,57 @@ __getVesaMode proc
 	mov bp,ax
 	mov cx,ax
 	mov ax,4f01h
-	mov edi, offset _videoInfo
+	mov di, offset _videoInfo
 	int 10h
 	cmp ax,4fh
 	jnz __getVesaModeOver
 	movzx ax,es:[di + VESAInformation.BitsPerPixel]
 	cmp ax,24
 	jb __getVesaMode_checkmode
+	cmp ax,32
+	ja __getVesaMode_checkmode
+	
 	mov ax,es:[di + VESAInformation.XRes]
-	cmp ax,800
+	cmp ax,1024
 	jb __getVesaMode_checkmode
 	cmp ax,1600
 	ja __getVesaMode_checkmode
 	mov dx,ax
-	and dx,0fff0h
+	and dx,0fh
 	cmp dx,0
-	jz __getVesaMode_checkmode
+	jnz __getVesaMode_checkmode
 	mov cx,es:[di + VESAInformation.YRes]
-	cmp cx,600
+	cmp cx,768
 	jb __getVesaMode_checkmode
 	cmp cx,1200
 	ja __getVesaMode_checkmode
 	mov dx,cx
-	and dx,0fff0h
+	and dx,0fh
 	cmp dx,0
-	jz __getVesaMode_checkmode
+	jnz __getVesaMode_checkmode
 	
 	mov es:[ebx+0],bp
 	mov es:[ebx+2],ax
 	mov es:[ebx + 4],cx
 	movzx ax,es:[di + VESAInformation.BitsPerPixel]
 	mov es:[ebx+6],ax
-	
-	add ebx,8
+		
 	mov eax,ebx
 	sub eax,offset _videoTypes
 	cmp eax,64
 	jae __getVesaModeOver
+	add ebx,8
 	jmp __getVesaMode_checkmode
 
 	__getVesaModeOver:
+	;sub ebx,8
+	
+	;mov ebx,offset _videoTypes
+	
+	mov ax,es:[ebx]
+	mov es:[_videoMode],ax
+	
 	mov eax,ebx
-	sub eax,offset _videoTypes
-	shr eax,3
 	
 	ADD ESP,200H
 	POP ES

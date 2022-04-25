@@ -62,7 +62,7 @@ __getVesaMode proc
 	jnz __getVesaModeOver
 	movzx ax,es:[di + VESAInformation.BitsPerPixel]
 	cmp ax,24
-	jb __getVesaMode_checkmode
+	jbe __getVesaMode_checkmode
 	cmp ax,32
 	ja __getVesaMode_checkmode
 	
@@ -90,19 +90,18 @@ __getVesaMode proc
 	mov es:[ebx + 4],cx
 	movzx ax,es:[di + VESAInformation.BitsPerPixel]
 	mov es:[ebx+6],ax
-	
+		
 	add ebx,8
 	mov eax,ebx
 	sub eax,offset _videoTypes
 	cmp eax,64
 	jae __getVesaModeOver
+	
 	jmp __getVesaMode_checkmode
 
 	__getVesaModeOver:
 	sub ebx,8
-	
-	mov ebx,offset _videoTypes
-	
+	;mov ebx,offset _videoTypes
 	mov ax,es:[ebx]
 	mov es:[_videoMode],ax
 	
@@ -154,10 +153,12 @@ __initVesa proc
 ;	D15 = 0：清除显示内存
 ;		= 1：不清除显示内存
 
+
+
 	mov ax,4f02h
 	mov bx,4000h
 	or bx,word ptr es:[_videoMode]
-	;mov bx,word ptr es:[_videoMode]
+
 	int 10h
 	cmp ax,4fh
 	mov bx, offset _initvesaSetErr
@@ -183,99 +184,19 @@ __initVesa proc
 	mov bx,offset _initvesaScanlineErr
 	mov [esp],bx
 	jnz _initVesaError
+	
+	mov si,offset _videoInfo
+	movzx eax,es:[si + VESAInformation.BytesPerScanLine]
+	movzx ecx,es:[si + VESAInformation.BitsPerPixel]
+	shr ecx,3
+	movzx edx,es:[si + VESAInformation.YRes]
+	movzx ebx,es:[si + VESAInformation.XRes]
+	
+	mov dword ptr es:[_videoWidth],ebx
+	mov dword ptr es:[_bytesPerPixel],ecx
+	mov dword ptr es:[_bytesPerLine],eax
+	mov dword ptr es:[_videoHeight],edx
 
-	mov cx,word ptr es:[_videoMode]
-	cmp cx,VIDEO_MODE_112
-	jz _check112
-	cmp cx, VIDEO_MODE_115
-	jz _check115
-	cmp cx,VIDEO_MODE_118
-	jz _check118
-	cmp cx, VIDEO_MODE_11b
-	jz _check11b
-	cmp cx, VIDEO_MODE_11F
-	jz _check11F
-	cmp cx, VIDEO_MODE_3
-	jz _check3
-	jmp _initVideoEnd
-
-	_check112:
-	mov si,offset _videoInfo
-	movzx eax,es:[si + VESAInformation.BytesPerScanLine]
-	movzx ecx,es:[si + VESAInformation.BitsPerPixel]
-	shr ecx,3
-	movzx edx,es:[si + VESAInformation.YRes]
-	movzx ebx,es:[si + VESAInformation.XRes]
-	
-	mov dword ptr es:[_videoWidth],ebx
-	mov dword ptr es:[_bytesPerPixel],ecx
-	mov dword ptr es:[_bytesPerLine],eax
-	mov dword ptr es:[_videoHeight],edx
-	jmp _setVideoParams
-
-	_check115:
-	mov si,offset _videoInfo
-	movzx eax,es:[si + VESAInformation.BytesPerScanLine]
-	movzx ecx,es:[si + VESAInformation.BitsPerPixel]
-	shr ecx,3
-	movzx edx,es:[si + VESAInformation.YRes]
-	movzx ebx,es:[si + VESAInformation.XRes]
-	
-	mov dword ptr es:[_videoWidth],ebx
-	mov dword ptr es:[_bytesPerPixel],ecx
-	mov dword ptr es:[_bytesPerLine],eax
-	mov dword ptr es:[_videoHeight],edx
-	jmp _setVideoParams
-	_check118:
-	mov si,offset _videoInfo
-	movzx eax,es:[si + VESAInformation.BytesPerScanLine]
-	movzx ecx,es:[si + VESAInformation.BitsPerPixel]
-	shr ecx,3
-	movzx edx,es:[si + VESAInformation.YRes]
-	movzx ebx,es:[si + VESAInformation.XRes]
-	
-	mov dword ptr es:[_videoWidth],ebx
-	mov dword ptr es:[_bytesPerPixel],ecx
-	mov dword ptr es:[_bytesPerLine],eax
-	mov dword ptr es:[_videoHeight],edx
-	jmp _setVideoParams
-	_check11b:
-	mov si,offset _videoInfo
-	movzx eax,es:[si + VESAInformation.BytesPerScanLine]
-	movzx ecx,es:[si + VESAInformation.BitsPerPixel]
-	shr ecx,3
-	movzx edx,es:[si + VESAInformation.YRes]
-	movzx ebx,es:[si + VESAInformation.XRes]
-	
-	mov dword ptr es:[_videoWidth],ebx
-	mov dword ptr es:[_bytesPerPixel],ecx
-	mov dword ptr es:[_bytesPerLine],eax
-	mov dword ptr es:[_videoHeight],edx
-	jmp _setVideoParams
-	
-	_check11F:
-	mov si,offset _videoInfo
-	movzx eax,es:[si + VESAInformation.BytesPerScanLine]
-	movzx ecx,es:[si + VESAInformation.BitsPerPixel]
-	shr ecx,3
-	movzx edx,es:[si + VESAInformation.YRes]
-	movzx ebx,es:[si + VESAInformation.XRes]
-	
-	mov dword ptr es:[_videoWidth],ebx
-	mov dword ptr es:[_bytesPerPixel],ecx
-	mov dword ptr es:[_bytesPerLine],eax
-	mov dword ptr es:[_videoHeight],edx
-	jmp _setVideoParams
-	
-	_check3:
-	mov dword ptr es:[_bytesPerPixel],2
-	mov dword ptr es:[_bytesPerLine],160
-	mov dword ptr es:[_videoHeight],25
-	
-	jmp _initVesaError
-	jmp _initVideoEnd
-
-	_setVideoParams:
 	mov eax,es:[_bytesPerLine]
 	mov ecx,es:[_videoHeight]
 	mul ecx
@@ -311,13 +232,13 @@ __initVesa proc
 	mov es:[_graphFontLSize],eax
 
 	lea di, _videoInfo
+	;mov dword ptr es:[di+28h],0f0000000h
 	mov eax,es:[di+28h]
 	mov es:[_videoBase],eax
 	mov eax,es:[di + 2ch]
 	add dword ptr es:[_videoBase],eax
 	
-	mov eax,es:[_videoBase]
-	
+	;mov eax,es:[_videoBase]
 	;mov ecx,es:[di + 48]
 	;mov ecx,es:[_videoFrameTotal]
 	;shl ecx,2	
@@ -408,112 +329,10 @@ __initVideo proc
 	call __textModeShow16
 	add sp,6
 
-	_getvideoselect:
 	mov ah,0
 	int 16h
-	jmp _selectVideoEnd
-	
-	cmp al,'0'
-	jz _videotextselect
-	cmp al,'1'
-	jz _video1select
-	cmp al,'2'
-	jz _video2select
-	cmp al,'3'
-	jz _video3select
-	cmp al,'4'
-	jz _video4select
-	cmp al,'5'
-	jz _video5select
-	jmp _getvideoselect
-	
-	cmp al,'6'
-	jz _video6select
-	cmp al,'7'
-	jz _video7select
-	cmp al,'8'
-	jz _video8select
-	cmp al,'9'
-	jz _video9select
-	cmp al,'a'
-	jz _video10select
-	
-	jmp _getvideoselect
-
-	_videotextselect:
-	;mov word ptr es:[_videoMode],VIDEO_MODE_3
-	jmp _selectVideoEnd
-	jmp __initVideoOver
-	
-	_video1select:
-	;mov word ptr es:[_videoMode],VIDEO_MODE_112
-	jmp _selectVideoEnd
-	
-	_video2select:
-	;mov word ptr es:[_videoMode],VIDEO_MODE_115
-	jmp _selectVideoEnd
-	
-	_video3select:
-	;mov word ptr es:[_videoMode],VIDEO_MODE_118
-	jmp _selectVideoEnd
-	
-	_video4select:
-	;mov word ptr es:[_videoMode],VIDEO_MODE_11b
-	jmp _selectVideoEnd
-	
-	_video5select:
-	;mov word ptr es:[_videoMode],VIDEO_MODE_11F
-	jmp _selectVideoEnd
-	
-	_video6select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_319
-	jmp _selectVideoEnd
-	
-	_video7select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_320
-	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
-	jmp _selectVideoEnd
-	
-	_video8select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_321
-	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
-	jmp _selectVideoEnd
-	
-	_video9select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_324
-	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
-	jmp _selectVideoEnd
-	
-	_video10select:
-	mov word ptr es:[_videoMode],VIDEO_MODE_326
-	mov dword ptr es:[_videoInfo + VESAInformation.PhyBasePtr],0f0000000h
-	jmp _selectVideoEnd
-	
-	_selectVideoEnd:
-	
-	;mov si,offset _videoTypes
-	;__searchBestShowMode:
-	;mov ax,ds:[si]
-	;cmp ax,0
-	;jz __getBestShowMode
-	;add si,8
-	;jmp __searchBestShowMode
-	;__getBestShowMode:
-	;sub si,8
-	;mov ax,ds:[si]
-	;mov word ptr es:[_videoMode],ax
-	
-	;sub al,'0'
-	;movzx ax,al
-	;shl ax,3
-	;mov di,offset _videoTypes
-	;add di,ax
-	;mov dx,word ptr es:[di]
-	;mov word ptr es:[_videoMode],dx
 	
 	call __initVesa
-	cmp eax,0
-	jnz __initVideoOver
 
 	__initVideoOver:
 	add sp,100h
@@ -538,11 +357,7 @@ _videoSelection_old db 'please select vido mode:',0ah
 				db '3: 1600x1200x32',0ah,0,0
 				
 				db '0: command line',0ah
-				
-				db '7: 800x600x16M(vmware virtual machie)',0ah
-				db '8: 1024x768x16M(vmware virtual machie)',0ah
-				db '9: 1280x1024x16M(vmware virtual machie)',0ah
-				db 'a: 1600x1200x16M(vmware virtual machie)',0ah,0,0
+
 				
 __initVideo endp
 

@@ -65,7 +65,7 @@ Capabilities	db 4 dup(?) 	; 视频环境的情况   一般是0x00000001
 VideoModeOffset	dw ?
 VideoModeSeg	dw ?			; 所支持的超级VGA模式的指针   
 TotalMemory		dw ? 			; 板载64K内存块数，0x10000乘以此数可得到视频缓冲区的大小
-Reserved		db 236 dup(?) 	; VgaInfoBlock的剩余   
+Reserved		db 236 dup(?) 	; VgaInfoBlock的剩余
 VESAInfoBlock ENDS   
 
 
