@@ -64,23 +64,23 @@ __getVesaMode proc
 	cmp ax,24
 	jb __getVesaMode_checkmode
 	mov ax,es:[di + VESAInformation.XRes]
-	cmp ax,800
+	cmp ax,1024
 	jb __getVesaMode_checkmode
-	cmp ax,1600
+	cmp ax,2560
 	ja __getVesaMode_checkmode
 	mov dx,ax
-	and dx,0fff0h
+	and dx,0fh
 	cmp dx,0
-	jz __getVesaMode_checkmode
+	jnz __getVesaMode_checkmode
 	mov cx,es:[di + VESAInformation.YRes]
-	cmp cx,600
+	cmp cx,768
 	jb __getVesaMode_checkmode
-	cmp cx,1200
+	cmp cx,1600
 	ja __getVesaMode_checkmode
 	mov dx,cx
-	and dx,0fff0h
+	and dx,0fh
 	cmp dx,0
-	jz __getVesaMode_checkmode
+	jnz __getVesaMode_checkmode
 	
 	mov es:[ebx+0],bp
 	mov es:[ebx+2],ax
@@ -147,7 +147,7 @@ __initVesa proc
 ;		= 1：不清除显示内存
 
 	mov ax,4f02h
-	mov bx,0000h
+	mov bx,4000h
 	or bx,word ptr es:[_videoMode]
 	;mov bx,word ptr es:[_videoMode]
 	int 10h
@@ -477,9 +477,21 @@ __initVideo proc
 	jmp _selectVideoEnd
 	
 	_selectVideoEnd:
+	
+	;mov si,offset _videoTypes
+	;__searchBestShowMode:
+	;mov ax,ds:[si]
+	;cmp ax,0
+	;jz __getBestShowMode
+	;add si,8
+	;jmp __searchBestShowMode
+	;__getBestShowMode:
+	;sub si,8
+	;mov ax,ds:[si]
+	;mov word ptr es:[_videoMode],ax
+	
 	sub al,'0'
 	movzx ax,al
-	
 	shl ax,3
 	mov di,offset _videoTypes
 	add di,ax
@@ -506,7 +518,9 @@ __initVideo proc
 	pop bp
 	ret
 
-_videoSelection db 'please select vido mode:',0ah
+_videoSelection db 'press any key to load Liunux OS!',0ah,0dh,0,'$',0
+
+_videoSelection_old db 'please select vido mode:',0ah
 				
 				db '0: 800x600x32',0ah
 				db '1: 1024x768x32',0ah
