@@ -29,8 +29,9 @@ __getVesaMode proc
 	
 	MOV AX,kernelData
 	MOV ES,AX
+	mov ds,ax
 
-	MOV eDI,offset _videoBlockInfo
+	MOV edi,offset _videoBlockInfo
 	
 	mov ax,4f00h
 	int 10h
@@ -48,26 +49,29 @@ __getVesaMode proc
 	cld
 	
 	__getVesaMode_checkmode:
-	lodsw
+	mov ax,ds:[si]
+	add si,2
+	
 	cmp ax,0
 	jz __getVesaModeOver
 	cmp ax,0ffffh
 	jz __getVesaModeOver
-	mov bp,ax
+
 	mov cx,ax
 	mov ax,4f01h
 	mov di, offset _videoInfo
 	int 10h
 	cmp ax,4fh
 	jnz __getVesaModeOver
+	
 	movzx ax,es:[di + VESAInformation.BitsPerPixel]
 	cmp ax,24
-	jbe __getVesaMode_checkmode
+	jb __getVesaMode_checkmode
 	cmp ax,32
 	ja __getVesaMode_checkmode
 	
 	mov ax,es:[di + VESAInformation.XRes]
-	cmp ax,1024
+	cmp ax,800
 	jb __getVesaMode_checkmode
 	cmp ax,1600
 	ja __getVesaMode_checkmode
@@ -75,8 +79,9 @@ __getVesaMode proc
 	and dx,0fh
 	cmp dx,0
 	jnz __getVesaMode_checkmode
+	
 	mov cx,es:[di + VESAInformation.YRes]
-	cmp cx,768
+	cmp cx,600
 	jb __getVesaMode_checkmode
 	cmp cx,1200
 	ja __getVesaMode_checkmode
@@ -85,11 +90,19 @@ __getVesaMode proc
 	cmp dx,0
 	jnz __getVesaMode_checkmode
 	
-	mov es:[ebx+0],bp
+	mov ax,ds:[si - 2]
+	mov es:[ebx+0],ax
+	
+	mov ax,es:[di + VESAInformation.XRes]
 	mov es:[ebx+2],ax
-	mov es:[ebx + 4],cx
+	
+	mov ax,es:[di + VESAInformation.YRes]
+	mov es:[ebx + 4],ax
+	
 	movzx ax,es:[di + VESAInformation.BitsPerPixel]
 	mov es:[ebx+6],ax
+	
+	;add si,2
 		
 	add ebx,8
 	mov eax,ebx
@@ -323,7 +336,7 @@ __initVideo proc
 	
 	call __getVesaMode
 
-	push word ptr 0ah
+	push word ptr 0ch
 	push offset _videoSelection
 	push cs
 	call __textModeShow16

@@ -66,6 +66,13 @@ add esp,4
 
 call __loadAllFiles
 
+push word ptr 0ch
+push offset _kernel16LoadFiles
+push cs
+call __textModeShow16
+add esp,6
+
+
 call __initVideo
 
 call __initDevices
@@ -420,7 +427,7 @@ __loadAllFiles endp
 
 _kernel16Start db 'kernel start',0
 
-
+_kernel16LoadFiles db 'kernel load files start',0
 
 KERNEL16 ends
 
