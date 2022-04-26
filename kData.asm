@@ -346,12 +346,14 @@ _textShowPos 		dd 1600
 _graphShowX			dd 0
 _graphShowY			dd 0
 
+_videoBufTotal		dd 0
+
 _videoInfo			VESAInformation <?>
 
 _videoBlockInfo		VESAInfoBlock <>
 
-_videoTypes			dw 32 dup (0)
-;_videoTypes			VESAModeInfo 16 dup <>		;800*600 1024*768 1280*1024 1600*1200
+_videoTypes			dw 64 dup (0)		;mode width height bits base
+;_videoTypes			VESAModeInfo 16 dup <>		
 
 _videoMode			dw 0
 _videoBase			dd 0

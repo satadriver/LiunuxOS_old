@@ -43,10 +43,15 @@ __getVesaMode proc
 	cmp eax,41534556h
 	JNZ __getVesaModeOver
 	
+	movzx eax,es:[edi + VESAInfoBlock.TotalMemory]
+	shl eax,16
+	mov es:[_videoBufTotal],eax
+	
 	MOV SI,ES:[DI + VESAInfoBlock.VideoModeOffset ]
 	MOV AX,ES:[DI + VESAInfoBlock.VideoModeSeg]
 	MOV DS,AX
 	cld
+	
 	
 	__getVesaMode_checkmode:
 	mov ax,ds:[si]
@@ -71,7 +76,7 @@ __getVesaMode proc
 	ja __getVesaMode_checkmode
 	
 	mov ax,es:[di + VESAInformation.XRes]
-	cmp ax,800
+	cmp ax,1024
 	jb __getVesaMode_checkmode
 	cmp ax,1600
 	ja __getVesaMode_checkmode
@@ -81,7 +86,7 @@ __getVesaMode proc
 	jnz __getVesaMode_checkmode
 	
 	mov cx,es:[di + VESAInformation.YRes]
-	cmp cx,600
+	cmp cx,768
 	jb __getVesaMode_checkmode
 	cmp cx,1200
 	ja __getVesaMode_checkmode
@@ -102,18 +107,23 @@ __getVesaMode proc
 	movzx ax,es:[di + VESAInformation.BitsPerPixel]
 	mov es:[ebx+6],ax
 	
-	;add si,2
+	mov eax,es:[di + VESAInformation.PhyBasePtr]
+	add eax,es:[di + VESAInformation.OffScreenMenOffset]
+	mov es:[ebx + 8],eax
+	
+	movzx eax,es:[di + VESAInformation.OffScreenMemSize]
+	mov es:[ebx +12],eax
 		
-	add ebx,8
+	add ebx,16
 	mov eax,ebx
 	sub eax,offset _videoTypes
-	cmp eax,64
+	cmp eax,128
 	jae __getVesaModeOver
 	
 	jmp __getVesaMode_checkmode
 
 	__getVesaModeOver:
-	sub ebx,8
+	sub ebx,16
 	;mov ebx,offset _videoTypes
 	mov ax,es:[ebx]
 	mov es:[_videoMode],ax
@@ -254,7 +264,7 @@ __initVesa proc
 	;mov eax,es:[_videoBase]
 	;mov ecx,es:[di + 48]
 	;mov ecx,es:[_videoFrameTotal]
-	;shl ecx,2	
+	;shl ecx,2
 	;add eax,ecx
 	;sub eax,MOUSE_DATA_LIMIT_SIZE
 	;mov es:[_mouseCoverData],eax
@@ -314,134 +324,247 @@ __initVesa endp
 
 
 
-__initVideo proc
-	push bp
-	mov bp,sp
-	push cx
-	push dx
-	push bx
-	push si
-	push di
-	push ds
-	push es
-	sub sp,100h
-
-	mov ax,kernelData
-	mov es,ax
-	mov ds,ax
-
-	;mov ax,4f02h
-	;mov bx,3
-	;int 10h
-	
-	call __getVesaMode
-
-	push word ptr 0ch
-	push offset _videoSelection
-	push cs
-	call __textModeShow16
-	add sp,6
-
-	mov ah,0
-	int 16h
-	
-	call __initVesa
-
-	__initVideoOver:
-	add sp,100h
-	pop es
-	pop ds
-	pop di
-	pop si
-	pop bx
-	pop dx
-	pop cx
-	mov sp,bp
-	pop bp
-	ret
-
-_videoSelection db 'press any key to load Liunux OS!',0ah,0dh,0,'$',0
-
-_videoSelection_old db 'please select vido mode:',0ah
-				
-				db '0: 800x600x32',0ah
-				db '1: 1024x768x32',0ah
-				db '2: 1280x1024x32',0ah
-				db '3: 1600x1200x32',0ah,0,0
-				
-				db '0: command line',0ah
-
-				
-__initVideo endp
-
-;bit 7 high ground
-;bit 6 red ground
-;bit 5 yellow ground
-;bit 4 blue ground
-;bit 3 high character
-;bit 2 red character
-;bit 1 yellow character
-;bit 0 blue character
 
 
-__getGraphCharBase proc
-push cx
-push dx
-push si
+
+
+
+
+
+
+
+
+
+;word src offset,word src seg,word dst offset,word dst seg
+__formatstr proc
+push bp
+mov bp,sp
+sub sp,100h
+
+push ecx
+push edx
+push ebx
+push esi
+push edi
 push ds
 push es
 
-;mov ax,0
-mov ax,BIOS_GRAPHCHARS_SEG
+mov si,ss:[bp+4]
+mov ax,ss:[bp+6]
 mov ds,ax
 
-mov ax,kernelData
+mov di,ss:[bp+8]
+mov ax,ss:[bp+10]
 mov es,ax
 
-mov dx,0
+mov bx,bp
+add bx,12
 
-mov si,BIOS_GRAPHCHARS_OFFSET
-mov cx,4
 cld
-_getGaraphChar8Bytes:
-lodsw
-add dx,ax
-loop _getGaraphChar8Bytes
-cmp dx,0
-;jnz _useBiosGraphChar
 
-mov dword ptr es:[_graphCharBase],GRAPHFONT_LOAD_ADDRESS
-jmp __getGraphCharBaseEnd
+mov ecx,0
 
-_useBiosGraphChar:
-mov eax,BIOS_GRAPHCHARS_BASE
-mov dword ptr es:[_graphCharBase],eax
+__formatstr_loop:
+lodsb
+cmp al,0
+jz __formatstr_end
+cmp al,'%'
+jz __formatstr_make
+stosb
+inc ecx
+jmp __formatstr_loop
 
-__getGraphCharBaseEnd:
+__formatstr_make:
+lodsb
+cmp al,'x'
+jz __formatstr_number
+cmp al,'s'
+jz __formatstr_str
+jmp __formatstr_end
+
+__formatstr_number:
+push es
+push di
+mov eax,ss:[bx]
+push eax
+call __hex3str
+add esp,8
+
+add edi,8
+add ecx,8
+
+add ebx,4
+jmp __formatstr_loop
+
+__formatstr_str:
+push es
+push di
+push ds
+push si
+call __strcpy16
+add esp,8
+add edi,eax
+add ecx,eax
+
+add bx,4
+jmp __formatstr_loop
+
+__formatstr_end:
 pop es
 pop ds
-pop si
-pop dx
-pop cx
+pop edi
+pop esi
+pop ebx
+pop edx
+pop ecx
+
+add sp,100h
+mov sp,bp
+pop bp
 ret
-__getGraphCharBase endp
+__formatstr endp
+
+
+
+
+
+;dword v,word offset,word seg
+__hex3str proc 
+push bp
+mov bp,sp
+sub sp,100h
+
+push ecx
+push edx
+push ebx
+push esi
+push edi
+push ds
+push es
+
+mov di,ss:[bp+8]
+mov ax,ss:[bp+10]
+mov es,ax
+
+mov ecx,8
+
+mov dl,28
+cld
+__hex3str_loop:
+push ecx
+mov eax,ss:[bp+4]
+mov cl,dl
+shr eax,cl
+and eax,0fh
+cmp al,9
+jbe __decimalchar
+add al,7
+__decimalchar:
+add al,30h
+stosb
+sub dl,4
+pop ecx
+loop __hex3str_loop
+
+mov eax,8
+pop es
+pop ds
+pop edi
+pop esi
+pop ebx
+pop edx
+pop ecx
+
+add sp,100h
+mov sp,bp
+pop bp
+ret
+__hex3str endp
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+;word src offset,word src seg,word dst offset,word dst seg
+__strcpy16 proc
+push bp
+mov bp,sp
+sub sp,100h
+
+push ecx
+push edx
+push ebx
+push esi
+push edi
+push ds
+push es
+
+mov di,ss:[bp+8]
+mov ax,ss:[bp+10]
+mov es,ax
+
+mov si,ss:[bp+4]
+mov ax,ss:[bp+6]
+mov ds,ax
+cld
+
+mov ecx,0
+
+__strcpy_loop:
+lodsb
+cmp al,0
+jz __strcpy_end
+stosb
+inc ecx
+jmp __strcpy_loop
+
+__strcpy_end:
+mov eax,ecx
+pop es
+pop ds
+pop edi
+pop esi
+pop ebx
+pop edx
+pop ecx
+
+add sp,100h
+mov sp,bp
+pop bp
+ret
+__strcpy16 endp
+
+
 
 
 ;param:strseg,stroff,color
 __textModeShow16 proc 
 	push bp
 	mov bp,sp
+	sub sp,40h
 
-	push ds
-	push es
-	push fs
-	
 	push cx
 	push dx
 	push bx
 	push si
 	push di
-	sub sp,40h
+	push ds
+	push es
+	push fs
+	
 	
 	mov ax,kernelData
 	mov fs,ax
@@ -519,21 +642,217 @@ __textModeShow16 proc
 	mov ax,si
 	sub ax,word ptr ss:[bp + 6]
 	
-	add sp,40h
+	pop fs
+	pop es
+	pop ds
 	pop di
 	pop si
 	pop bx
 	pop dx
 	pop cx
-	
-	pop fs
-	pop es
-	pop ds
 
+	add sp,40h
 	mov sp,bp
 	pop bp
 	ret
 __textModeShow16 endp
+
+
+
+
+
+__initVideo proc
+	push bp
+	mov bp,sp
+	push cx
+	push dx
+	push bx
+	push si
+	push di
+	push ds
+	push es
+	sub sp,400h
+	
+	
+
+	mov ax,kernelData
+	mov es,ax
+	mov ds,ax
+
+	;mov ax,4f02h
+	;mov bx,3
+	;int 10h
+	
+	call __getVesaMode
+
+	push word ptr 0ch
+	push offset _videoWelcome
+	push cs
+	call __textModeShow16
+	add sp,6
+	
+	;jmp __initVideo_getmode
+	
+	mov bx,sp
+	add bx,200h
+	
+	mov ecx,0
+	mov si,offset _videoTypes
+	__initVideo_showmode:
+	cmp word ptr ds:[si],0
+	jz __initVideo_getmode
+	
+	cmp word ptr ds:[si+2],0
+	jz __initVideo_getmode
+	
+	cmp word ptr ds:[si+4],0
+	jz __initVideo_getmode
+	
+	cmp word ptr ds:[si+6],0
+	jz __initVideo_getmode
+	
+	;cmp word ptr ds:[si+8],0
+	;jz __initVideo_getmode
+	
+	mov eax,dword ptr ds:[si + 12]
+	push eax
+	mov eax,dword ptr ds:[si + 8]
+	push eax
+	movzx eax,word ptr 	ds:[si+6]
+	push eax
+	movzx eax,word ptr 	ds:[si+4]
+	push eax
+	movzx eax,word ptr 	ds:[si+2]
+	push eax
+	movzx eax,word ptr 	ds:[si+0]
+	push eax
+	
+	push ecx
+	
+	push ss
+	push bx
+	
+	push cs
+	mov ax, offset _videoModeSelection
+	push ax
+	
+	call __formatstr
+	add sp,36
+	
+	push word ptr 0ch
+	push bx
+	push ss
+	call __textModeShow16
+	add sp,6
+	
+	inc ecx
+	
+	;add word ptr ds:[_textShowPos],160
+
+	add si,16
+	mov ax,si
+	sub ax,offset _videoTypes
+	cmp ax,128
+	jb  __initVideo_showmode
+	
+__initVideo_getmode:
+	mov ah,0
+	int 16h
+	sub al,30h
+	movzx eax,al
+	cmp eax,ecx
+	ja __initVideo_getmode
+	
+	shl eax,4
+	add eax,offset _videoTypes
+	mov dx,ds:[eax]
+	mov word ptr ds:[_videoMode],dx
+	
+	call __initVesa
+
+	__initVideoOver:
+	add sp,400h
+	pop es
+	pop ds
+	pop di
+	pop si
+	pop bx
+	pop dx
+	pop cx
+	mov sp,bp
+	pop bp
+	ret
+
+_videoWelcome 				db 'welcome to Liunux OS,please choose the display resolution:',0ah,0
+
+_videoModeSelection 		db '%x. mode:%x,width:%x,height:%x,bits:%x,base:%x,size:%x',0ah,0
+
+;_videoModeSelection 		db 'hello how are you?',0ah,0
+	
+__initVideo endp
+
+
+
+
+
+
+
+
+
+;bit 7 high ground
+;bit 6 red ground
+;bit 5 yellow ground
+;bit 4 blue ground
+;bit 3 high character
+;bit 2 red character
+;bit 1 yellow character
+;bit 0 blue character
+
+
+__getGraphCharBase proc
+push cx
+push dx
+push si
+push ds
+push es
+
+;mov ax,0
+mov ax,BIOS_GRAPHCHARS_SEG
+mov ds,ax
+
+mov ax,kernelData
+mov es,ax
+
+mov dx,0
+
+mov si,BIOS_GRAPHCHARS_OFFSET
+mov cx,4
+cld
+_getGaraphChar8Bytes:
+lodsw
+add dx,ax
+loop _getGaraphChar8Bytes
+cmp dx,0
+;jnz _useBiosGraphChar
+
+mov dword ptr es:[_graphCharBase],GRAPHFONT_LOAD_ADDRESS
+jmp __getGraphCharBaseEnd
+
+_useBiosGraphChar:
+mov eax,BIOS_GRAPHCHARS_BASE
+mov dword ptr es:[_graphCharBase],eax
+
+__getGraphCharBaseEnd:
+pop es
+pop ds
+pop si
+pop dx
+pop cx
+ret
+__getGraphCharBase endp
+
+
+
 
 kernel16 ends
 

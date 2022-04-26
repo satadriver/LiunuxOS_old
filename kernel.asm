@@ -77,8 +77,6 @@ call __initVideo
 
 call __initDevices
 
-
-
 call __initGDT
 
 call __initIDT
