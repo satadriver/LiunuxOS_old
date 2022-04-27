@@ -353,7 +353,7 @@ _videoInfo			VESAInformation <?>
 _videoBlockInfo		VESAInfoBlock <>
 
 _videoTypes			dw 64 dup (0)		;mode width height bits base
-;_videoTypes			VESAModeInfo 16 dup <>		
+;_videoTypes			VESAModeInfo 16 dup <>
 
 _videoMode			dw 0
 _videoBase			dd 0

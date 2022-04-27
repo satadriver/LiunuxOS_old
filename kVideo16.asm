@@ -70,8 +70,8 @@ __getVesaMode proc
 	jnz __getVesaModeOver
 	
 	mov ax,es:[di + VESAInformation.ModeAttr]
-	and ax,90h
-	cmp ax,90h
+	and ax,80h
+	cmp ax,80h
 	jnz __getVesaMode_checkmode
 	
 	mov al,es:[di + VESAInformation.MemoryModel]
@@ -395,6 +395,10 @@ jz __formatstr_str
 jmp __formatstr_end
 
 __formatstr_number:
+mov al,'0'
+stosb
+mov al,'x'
+stosb
 push es
 push di
 mov eax,ss:[bx]
@@ -420,6 +424,8 @@ add bx,4
 jmp __formatstr_loop
 
 __formatstr_end:
+mov al,0
+stosb
 movzx eax,di
 sub ax,ss:[bp + 8]
 pop es
@@ -460,6 +466,8 @@ mov es,ax
 
 mov ecx,8
 
+mov ebx,0
+
 mov dl,28
 cld
 __hex3str_loop:
@@ -473,6 +481,17 @@ jbe __decimalchar
 add al,7
 __decimalchar:
 add al,30h
+cmp al,'0'
+jnz __hex3str_state
+cmp ebx,0
+jnz __hex3str_keep
+cmp dl,0
+jz  __hex3str_keep
+mov al,' '
+jmp __hex3str_keep
+__hex3str_state:
+mov ebx,1
+__hex3str_keep:
 stosb
 sub dl,4
 pop ecx
@@ -690,12 +709,12 @@ __initVideo proc
 	mov ax,4f02h
 	mov bx,3
 	int 10h
-	mov word ptr ds:[_textShowPos],640
+	mov word ptr ds:[_textShowPos],0
 	
 	call __getVesaMode
 
 	mov bx,sp
-	add bx,200h
+	;add bx,200h
 	
 	mov edi,offset _videoBlockInfo
 
