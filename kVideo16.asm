@@ -41,7 +41,7 @@ __getVesaMode proc
 	
 	mov eax,es:[edi + VESAInfoBlock.VESASignature]
 	cmp eax,41534556h
-	JNZ __getVesaModeOver
+	;JNZ __getVesaModeOver
 	
 	movzx eax,es:[edi + VESAInfoBlock.TotalMemory]
 	shl eax,16
@@ -69,6 +69,18 @@ __getVesaMode proc
 	cmp ax,4fh
 	jnz __getVesaModeOver
 	
+	mov ax,es:[di + VESAInformation.ModeAttr]
+	and ax,90h
+	cmp ax,90h
+	jnz __getVesaMode_checkmode
+	
+	mov al,es:[di + VESAInformation.MemoryModel]
+	cmp al,4
+	jz __getVesaMode_checkbits
+	cmp al,6 
+	jnz __getVesaMode_checkmode
+	
+	__getVesaMode_checkbits:
 	movzx ax,es:[di + VESAInformation.BitsPerPixel]
 	cmp ax,24
 	jb __getVesaMode_checkmode
@@ -76,7 +88,7 @@ __getVesaMode proc
 	ja __getVesaMode_checkmode
 	
 	mov ax,es:[di + VESAInformation.XRes]
-	cmp ax,1024
+	cmp ax,1280
 	jb __getVesaMode_checkmode
 	cmp ax,1600
 	ja __getVesaMode_checkmode
@@ -86,7 +98,7 @@ __getVesaMode proc
 	jnz __getVesaMode_checkmode
 	
 	mov cx,es:[di + VESAInformation.YRes]
-	cmp cx,768
+	cmp cx,960
 	jb __getVesaMode_checkmode
 	cmp cx,1200
 	ja __getVesaMode_checkmode
@@ -362,7 +374,7 @@ add bx,12
 
 cld
 
-mov ecx,0
+
 
 __formatstr_loop:
 lodsb
@@ -391,7 +403,6 @@ call __hex3str
 add esp,8
 
 add edi,8
-add ecx,8
 
 add ebx,4
 jmp __formatstr_loop
@@ -399,17 +410,18 @@ jmp __formatstr_loop
 __formatstr_str:
 push es
 push di
-push ds
-push si
+push word ptr ss:[bx+2]
+push word ptr ss:[bx]
 call __strcpy16
 add esp,8
 add edi,eax
-add ecx,eax
 
 add bx,4
 jmp __formatstr_loop
 
 __formatstr_end:
+movzx eax,di
+sub ax,ss:[bp + 8]
 pop es
 pop ds
 pop edi
@@ -521,18 +533,16 @@ mov ax,ss:[bp+6]
 mov ds,ax
 cld
 
-mov ecx,0
-
 __strcpy_loop:
 lodsb
 cmp al,0
 jz __strcpy_end
 stosb
-inc ecx
 jmp __strcpy_loop
 
 __strcpy_end:
-mov eax,ecx
+movzx eax,di
+sub ax,ss:[bp+8]
 pop es
 pop ds
 pop edi
@@ -673,28 +683,51 @@ __initVideo proc
 	push es
 	sub sp,400h
 	
-	
-
 	mov ax,kernelData
 	mov es,ax
 	mov ds,ax
 
-	;mov ax,4f02h
-	;mov bx,3
-	;int 10h
+	mov ax,4f02h
+	mov bx,3
+	int 10h
+	mov word ptr ds:[_textShowPos],640
 	
 	call __getVesaMode
 
-	push word ptr 0ch
-	push offset _videoWelcome
+	mov bx,sp
+	add bx,200h
+	
+	mov edi,offset _videoBlockInfo
+
+	mov ax,es:[edi + VESAInfoBlock.OEMStringSeg]
+	push ax
+	mov ax,es:[edi + VESAInfoBlock.OEMStringOffset]
+	push ax
+	
+	movzx eax,es:[edi + VESAInfoBlock.TotalMemory]
+	shl eax,16
+	push eax
+	
+	movzx eax,es:[edi + VESAInfoBlock.VESAVersion]
+	push eax
+	
+	push ss
+	push bx
+	
 	push cs
+	mov ax, offset _videoWelcome
+	push ax
+	
+	call __formatstr
+	add sp,20
+	
+	push word ptr 0ah
+	push bx
+	push ss
 	call __textModeShow16
 	add sp,6
 	
-	;jmp __initVideo_getmode
-	
-	mov bx,sp
-	add bx,200h
+
 	
 	mov ecx,0
 	mov si,offset _videoTypes
@@ -739,7 +772,7 @@ __initVideo proc
 	call __formatstr
 	add sp,36
 	
-	push word ptr 0ch
+	push word ptr 0fh
 	push bx
 	push ss
 	call __textModeShow16
@@ -747,7 +780,6 @@ __initVideo proc
 	
 	inc ecx
 	
-	;add word ptr ds:[_textShowPos],160
 
 	add si,16
 	mov ax,si
@@ -783,11 +815,11 @@ __initVideo_getmode:
 	pop bp
 	ret
 
-_videoWelcome 				db 'welcome to Liunux OS,please choose the display resolution:',0ah,0
+_videoWelcome 				db 'Welcome to Liunux OS! Detected VESA version:%x,buffer size:%x,description:%s,please choose the resolution of display:',0dh,0
 
-_videoModeSelection 		db '%x. mode:%x,width:%x,height:%x,bits:%x,base:%x,size:%x',0ah,0
+_videoModeSelection 		db '%x. mode:%x,width:%x,height:%x,bits:%x,base:%x,reserved size:%x',0dh,0
 
-;_videoModeSelection 		db 'hello how are you?',0ah,0
+_videoSelectionError 		db 'invalid item,please reinput again',0dh,0
 	
 __initVideo endp
 

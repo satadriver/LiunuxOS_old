@@ -342,7 +342,7 @@ _rmPicElcr 				dw 0
 _rmMode8259Mask 		dw 0
 _realModeStack			dd 0
 
-_textShowPos 		dd 1600
+_textShowPos 		dd 640
 _graphShowX			dd 0
 _graphShowY			dd 0
 
