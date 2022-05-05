@@ -395,10 +395,6 @@ jz __formatstr_str
 jmp __formatstr_end
 
 __formatstr_number:
-mov al,'0'
-stosb
-mov al,'x'
-stosb
 push es
 push di
 mov eax,ss:[bx]
@@ -406,7 +402,7 @@ push eax
 call __hex3str
 add esp,8
 
-add edi,8
+add edi,eax
 
 add ebx,4
 jmp __formatstr_loop
@@ -464,6 +460,12 @@ mov di,ss:[bp+8]
 mov ax,ss:[bp+10]
 mov es,ax
 
+
+mov eax,ss:[bp+4]
+cmp eax,0
+jnz __hex3str_not_zero
+
+__hex3str_not_zero:
 mov ecx,8
 
 mov ebx,0
@@ -481,23 +483,39 @@ jbe __decimalchar
 add al,7
 __decimalchar:
 add al,30h
-cmp al,'0'
-jnz __hex3str_state
+
 cmp ebx,0
 jnz __hex3str_keep
-cmp dl,0
-jz  __hex3str_keep
-mov al,' '
-jmp __hex3str_keep
-__hex3str_state:
+
+cmp al,'0'
+jz __hex3str_neglect_0
+
+__hex3str_show_prefix:
+mov cl,al
+mov al,'0'
+stosb
+mov al,'x'
+stosb
+mov al,cl
 mov ebx,1
+jmp __hex3str_keep
+
+
+__hex3str_neglect_0:
+cmp dl,0
+jz __hex3str_show_prefix
+mov al,' '
+jmp __hex3str_keep_end
+
 __hex3str_keep:
 stosb
+__hex3str_keep_end:
 sub dl,4
 pop ecx
 loop __hex3str_loop
 
-mov eax,8
+movzx eax,di
+sub ax,ss:[bp+8]
 pop es
 pop ds
 pop edi
