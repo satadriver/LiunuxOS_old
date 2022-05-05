@@ -852,9 +852,9 @@ __initVideo_getmode:
 	pop bp
 	ret
 
-_videoWelcome 				db 'Welcome to Liunux OS! Detected VESA version:%x,buffer size:%x,description:%s,please choose the resolution of display:',0dh,0
+_videoWelcome 				db 'Welcome to Liunux OS! VESA Version:%x,Size:%x,Description:%s,please choose the display show mode:',0dh,0
 
-_videoModeSelection 		db '%x. mode:%x,width:%x,height:%x,bits:%x,base:%x,reserved size:%x',0dh,0
+_videoModeSelection 		db '[%x]. Screen VESA mode:%x, Width:%x, Height:%x, Bits:%x, Base Address:%x, Reserved Size:%x',0dh,0
 
 _videoSelectionError 		db 'invalid item,please reinput again',0dh,0
 	
