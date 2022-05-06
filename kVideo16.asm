@@ -828,6 +828,10 @@ __initVideo_getmode:
 	mov ah,0
 	int 16h
 	sub al,30h
+	cmp al,0
+	jb __initVideo_getmode
+	cmp al,9
+	ja __initVideo_getmode
 	movzx eax,al
 	cmp eax,ecx
 	ja __initVideo_getmode
