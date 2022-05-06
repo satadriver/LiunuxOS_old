@@ -5,8 +5,9 @@ MBR_BUFFER_SEG 		EQU 6000H
 NEWMBR_BUFFER_SEG 	EQU 6200H
 FLAG_SECTOR_SEG		EQU 6400H
 FONT_SECTOR_SEG		EQU 6600H
-LOADER_BUFFER_SEG 	EQU 7000H
-KERNEL_BUFFER_SEG	EQU 8000h
+
+LOADER_BUFFER_SEG 	EQU 800H
+KERNEL_BUFFER_SEG	EQU 1000H
 
 SETUP_SECTOR_LIMIT	EQU 1000H
 INSTALL_FLAG		EQU 00474a4ch
@@ -26,7 +27,7 @@ code segment para use16
 assume cs:code
 start:
 
-;find empty sectors
+;find empty sectors,fat12 or fat16,fat32
 mov dword ptr cs:[freesecno],6
 _readnextsec:
 inc dword ptr cs:[freesecno]
