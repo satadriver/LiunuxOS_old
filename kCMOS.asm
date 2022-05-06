@@ -43,12 +43,13 @@ mov al,0ch
 out 70h,al
 in al,71h
 ; IRQF = (PF * PIE) + (AF * AIE) + (UF *UFE),if double interruptions,will not be 1
-test al,040h
-jnz _cmosExactlyTimer
 test al,020h
 jnz _cmosAlarmer
 test al,010h
 jnz _cmosPeriodSecond
+test al,040h
+jnz _cmosExactlyTimer
+
 jmp _cmosIntEnd
 
 _cmosExactlyTimer:
