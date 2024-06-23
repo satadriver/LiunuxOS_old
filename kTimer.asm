@@ -1,5 +1,10 @@
 .386p
 
+include descriptor.asm
+
+;SINGLE_TASK_TSS equ 1
+
+
 Kernel Segment public para use32
 assume cs:Kernel
 
