@@ -12,7 +12,7 @@ SIZE_OF_INT				EQU 4
 SIZE_OF_FWORD			EQU 6
 SIZE_OF_QWORD			EQU 8
 
-PAGE_SIZE				EQU 4096
+PAGE_SIZE				EQU 1000h
 
 PAGE_INDEX_COUNT		EQU PAGE_SIZE/SIZE_OF_INT
 
@@ -26,7 +26,7 @@ KERNEL_TASK_STACK_SIZE	EQU 10000H
 ;USER_TASK_LIMIT			EQU (MAX_TASK_LIMIT - KERNEL_TASK_LIMIT)
 USER_TASK_STACK_SIZE	EQU 100000h
 
-TASK_STACK0_SIZE 		EQU 10000H
+TASK_STACK0_SIZE 		EQU 1024
 
 STACK_TOP_DUMMY			EQU 40H
 
@@ -382,7 +382,6 @@ _mouseRatioSize		EQU 40
 
 _kTaskSchedule		dd 0
 _kernelDllEntry		dd 0
-;_kUser				dd 0
 _kDebugger			dd 0
 _kBreakPoint		dd 0
 _kSoundCardInt		dd 0
@@ -403,7 +402,6 @@ _kCmosExactTimerProc 	dd 0
 				
 _kernelDllEntryFz		db '__kernelEntry',0
 _kTaskScheduleFz		db '__kTaskSchedule',0
-;_kUserFz				db '__user',0
 _kDebuggerFz			db '__kDebugger',0
 _kBreakPointFz			db '__kBreakPoint',0
 _kSoundCardIntFz		db '__kSoundInterruptionProc',0
