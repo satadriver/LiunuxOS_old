@@ -2,7 +2,7 @@
 
 include descriptor.asm
 
-;SINGLE_TASK_TSS equ 1
+SINGLE_TASK_TSS equ 1
 
 
 Kernel Segment public para use32

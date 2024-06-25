@@ -4,6 +4,7 @@ Kernel Segment public para use32
 assume cs:Kernel
 
 ;useless function
+comment *
 __initV86Tss proc 
 push ecx
 push edx
@@ -63,7 +64,7 @@ pop ecx
 ret
 __initV86Tss endp
 
-
+*
 
 
 

@@ -50,7 +50,7 @@ call __startPage
 
 ;call __initSysTimerTss
 
-CALL __initV86Tss
+;CALL __initV86Tss
 
 ;注意类型定义和变量定义寻址的不同，类型定义的成员寻址是相对于定义的偏移，变量成员的寻址是变量的实际地址加上成员的偏移地址
 mov ecx,SYSTEM_TSS_SIZE
@@ -276,11 +276,6 @@ jz _noDllEntryFunction
 ;why not use push offset __V86ParamsProc?
 ;1 lea可以处理局部变量而 offset 则不能
 ;2 假设要bx+10h->bx但又不想影响flag那就只能用lea bx,[bx+10h]了
-mov eax,kernelData
-shl eax,4
-add eax,offset _tssTimer
-push eax
-
 mov eax,Kernel
 shl eax,4
 push eax
@@ -293,12 +288,10 @@ mov eax,kernelData
 shl eax,4
 push eax
 
-
 mov eax,Kernel16
 shl eax,4
 add eax,offset __v86VMLeave
 push eax
-
 
 mov eax,Kernel16
 shl eax,4
@@ -310,7 +303,6 @@ push dword ptr ds:[ebx + _graphCharBase]
 mov eax,ebx
 add eax,offset _videoInfo
 push eax
-
 
 mov eax,ds:[ebx + _kernelDllEntry]
 call  eax
@@ -374,7 +366,7 @@ __kernel32Exit endp
 
 
 
-
+comment *
 
 __initSysTimerTss proc
 push ebp
@@ -511,6 +503,8 @@ mov esp,ebp
 pop ebp
 ret
 __initCmosTimerTss endp
+
+*
 
 kernel ends
 

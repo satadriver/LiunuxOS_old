@@ -22,7 +22,7 @@ include kcoproc.asm
 include kdriver.asm
 include kcdrom.asm
 
-;SINGLE_TASK_TSS equ 1
+SINGLE_TASK_TSS equ 1
 
 
 kernel16 segment public para use16
