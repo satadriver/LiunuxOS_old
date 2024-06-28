@@ -32,6 +32,7 @@ mov ebp,esp
 mov ebx,kernelData
 shl ebx,4
 
+
 ;enable v86 vm
 db 0fh,20h,0e0h
 ;mov eax,cr4
@@ -43,8 +44,9 @@ or eax,40600h
 db 0fh,22h,0e0h
 ;mov cr4,eax
 
+
 ;如果启动分页机制,在tss中必须传递cr3
-call __startPage
+;call __startPage
 
 ;call __initCmosTimerTss
 

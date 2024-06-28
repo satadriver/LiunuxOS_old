@@ -26,6 +26,11 @@ shl ebx,4
 
 ;1.1931816MHZ = 1193181.6hz
 
+cmp dword ptr ds:[ebx + _kScreenProtect],0
+jz _timer0CheckTaskCounter
+call dword ptr ds:[ebx + _kScreenProtect]
+_timer0CheckTaskCounter:
+
 cmp dword ptr ds:[ebx + _kTaskSchedule],0
 jz _sysTimerEnd
 
@@ -35,10 +40,8 @@ call eax
 add esp,4
 
 
-cmp dword ptr ds:[ebx + _kScreenProtect],0
-jz _timer0CheckTaskCounter
-call dword ptr ds:[ebx + _kScreenProtect]
-_timer0CheckTaskCounter:
+mov eax,ds:[CURRENT_TASK_TSS_BASE + TASKSTATESEG.mCr3]
+mov cr3,eax
 
 mov al,20h
 out 20h,al
