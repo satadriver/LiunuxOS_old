@@ -2,7 +2,7 @@
 
 include descriptor.asm
 
-SINGLE_TASK_TSS equ 1
+
 
 
 Kernel Segment public para use32
@@ -20,6 +20,8 @@ push ss
 mov ax,rwData32Seg
 mov ds,ax
 mov es,ax
+MOV FS,ax
+MOV GS,AX
 
 mov ebx,kernelData
 shl ebx,4

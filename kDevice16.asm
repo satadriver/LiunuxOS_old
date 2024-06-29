@@ -199,7 +199,6 @@ mov al,0
 ;mov ax,23864
 ;闪烁抖动显卡刷新率锁到85Hz以上就行
 ;75-85
-mov ax,11932
 mov ax,SYSTEM_TIMER0_FACTOR 	;47728 is 4 time multipe than 11932,about 40ms
 
 ;mov eax,0
