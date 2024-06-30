@@ -6,7 +6,6 @@ include kintr.asm
 include kpower.asm
 include kvideo.asm
 include kmemory.asm
-
 include kdloader.asm
 
 
@@ -32,7 +31,6 @@ mov ebp,esp
 mov ebx,kernelData
 shl ebx,4
 
-
 ;enable v86 vm
 db 0fh,20h,0e0h
 ;mov eax,cr4
@@ -52,7 +50,7 @@ db 0fh,22h,0e0h
 
 ;call __initSysTimerTss
 
-;CALL __initV86Tss
+CALL __initV86Tss
 
 ;注意类型定义和变量定义寻址的不同，类型定义的成员寻址是相对于定义的偏移，变量成员的寻址是变量的实际地址加上成员的偏移地址
 mov ecx,SYSTEM_TSS_SIZE
@@ -68,13 +66,13 @@ MOV dword ptr ds:[CURRENT_TASK_TSS_BASE + TASKSTATESEG.mSS0],rwData32Seg	;stackT
 mov dword ptr ds:[CURRENT_TASK_TSS_BASE + TASKSTATESEG.mCr3],PDE_ENTRY_VALUE
 
 mov eax,CURRENT_TASK_TSS_BASE
-mov word ptr ds:[ebx + kTssDescriptor + 2],ax
+mov word ptr ds:[ebx + kTssTaskDescriptor + 2],ax
 shr eax,16
-mov byte ptr ds:[ebx + kTssDescriptor + 4],al
-mov byte ptr ds:[ebx + kTssDescriptor + 7],ah
+mov byte ptr ds:[ebx + kTssTaskDescriptor + 4],al
+mov byte ptr ds:[ebx + kTssTaskDescriptor + 7],ah
 
-mov word ptr ds:[ebx + kTssDescriptor ],SYSTEM_TSS_SIZE - 1
-mov ax,kTssSelector
+mov word ptr ds:[ebx + kTssTaskDescriptor ],SYSTEM_TSS_SIZE - 1
+mov ax,kTssTaskSelector
 ltr ax
 
 mov ax,ldtSelector
@@ -292,7 +290,7 @@ push eax
 
 mov eax,Kernel16
 shl eax,4
-add eax,offset __v86VMLeave
+add eax,offset _v86_number
 push eax
 
 mov eax,Kernel16
@@ -369,7 +367,6 @@ __kernel32Exit endp
 
 
 comment *
-
 __initSysTimerTss proc
 push ebp
 mov ebp,esp
@@ -509,8 +506,6 @@ __initCmosTimerTss endp
 *
 
 kernel ends
-
-
 
 
 ;tss descriptor G位== 0 说明长度可以大于等于104,D位无效,type中bit1代表是否busy,只能是89h或者8bh

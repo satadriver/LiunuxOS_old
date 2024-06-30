@@ -21,6 +21,7 @@ RESTORE_MOUSE				Equ 14
 SETVIDEOMODE				EQU 15
 
 
+
 Kernel Segment public para use32
 assume cs:Kernel
 
@@ -157,6 +158,7 @@ jmp _kSysSvcReturn
 _setVideoMode:
 call __setVideoMode
 jmp _kSysSvcReturn
+
 
 
 _kSysSvcReturn:
@@ -364,5 +366,9 @@ mov byte ptr ds:[V86VMIPARAMS_ADDRESS +V86VMIPARAMS._work],1
 mov dword ptr ds:[V86VMIPARAMS_ADDRESS +V86VMIPARAMS._result],1
 ret
 __setVideoMode endp
+
+
+
+
 
 Kernel ends

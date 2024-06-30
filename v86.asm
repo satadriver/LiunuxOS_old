@@ -3,8 +3,7 @@
 Kernel Segment public para use32
 assume cs:Kernel
 
-;useless function
-comment *
+
 __initV86Tss proc 
 push ecx
 push edx
@@ -64,7 +63,6 @@ pop ecx
 ret
 __initV86Tss endp
 
-*
 
 
 
@@ -420,11 +418,30 @@ popad
 iret
 __v86Int21hProc endp
 
-__v86TssProc proc
 
-;mov ax,3
-;int 10h
-iret
+
+__v86TssProc proc
+mov ax,KernelData
+mov ds,ax
+mov es,ax
+mov fs,ax
+mov gs,ax
+mov ss,ax
+mov sp,BIT16_STACK_TOP
+
+mov eax,ds:[_v86_number]
+mov byte ptr ds:[__v86TssProc_command],al
+
+mov eax,ds:[_v86_eax]
+mov ecx,ds:[_v86_ecx]
+mov edx,ds:[_v86_edx]
+mov ebx,ds:[_v86_ebx]
+mov esi,ds:[_v86_esi]
+mov edi,ds:[_v86_edi]
+db 0cdh
+__v86TssProc_command:
+db 10h
+iretd
 jmp __v86TssProc
 __v86TssProc endp
 

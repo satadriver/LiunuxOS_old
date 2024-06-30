@@ -1,7 +1,10 @@
+comment *
+
 .386p
 
 KERNEL segment public para use32
 assume cs:KERNEL
+
 
 align 10h
 ;param:edi->secno,edi+4->seccnt,edi+8->buf,edi + 12->bufsize
@@ -80,6 +83,8 @@ sti
 iretd
 jmp __int13hProc
 __int13hProc endp
+
+
 
 
 kernel ends
@@ -188,3 +193,5 @@ dw (offset _int13SwitchCode32Seg - offset __int13hProc)
 dw int13CodeSeg
 __int13Pm16Entry endp
 KERNEL16 ends
+
+*

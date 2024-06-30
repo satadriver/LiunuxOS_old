@@ -132,36 +132,36 @@ mov word ptr ds:[tInvalidTssEntry + 2],reCode32Seg
 ;set invalid tss exception,must use task gate
 mov eax,ebx
 add eax,offset __tInvalidTssProc
-mov ds:[_tssExp.mEip],eax
-mov ds:[_tssExp.mCs],reCode32Seg
+mov ds:[_tssException.mEip],eax
+mov ds:[_tssException.mCs],reCode32Seg
 ;必须要设置esp0,esp,ss0,ss四个寄存器的值，少一个都不行?????
 ;如果分页，必须设置cr3
-MOV dword ptr DS:[_tssExp.mEsp0],TSSEXP_STACK0_TOP
-MOV dword ptr DS:[_tssExp.mEsp],TSSEXP_STACK_TOP
-MOV dword ptr DS:[_tssExp.mEbp],TSSEXP_STACK_TOP
-mov dword ptr ds:[_tssExp.mSs0],rwData32Seg
-mov dword ptr ds:[_tssExp.mSs],rwData32Seg
-mov dword ptr ds:[_tssExp.mDs],rwData32Seg
-mov dword ptr ds:[_tssExp.mEs],rwData32Seg
-mov dword ptr ds:[_tssExp.mFs],rwData32Seg
-mov dword ptr ds:[_tssExp.mGs],rwData32Seg
-mov dword ptr ds:[_tssExp.mEax],0
-mov dword ptr ds:[_tssExp.mEcx],0
-mov dword ptr ds:[_tssExp.mEdx],0
-mov dword ptr ds:[_tssExp.mEbx],0
-mov dword ptr ds:[_tssExp.mEsi],0
-mov dword ptr ds:[_tssExp.mEdi],0
-mov dword ptr ds:[_tssExp.mPrev],0
-mov dword ptr ds:[_tssExp.mEflags],0
-mov dword ptr ds:[_tssExp.mCr3],PDE_ENTRY_VALUE
-mov dword ptr ds:[_tssExp.mLdt],0
-mov word ptr ds:[_tssExp.mTrap],0
-mov byte ptr ds:[_tssExp.mIomapEnd],0ffh
-mov word ptr ds:[_tssExp.mIomap],104
+MOV dword ptr DS:[_tssException.mEsp0],TSSEXP_STACK0_TOP
+MOV dword ptr DS:[_tssException.mEsp],TSSEXP_STACK_TOP
+MOV dword ptr DS:[_tssException.mEbp],TSSEXP_STACK_TOP
+mov dword ptr ds:[_tssException.mSs0],rwData32Seg
+mov dword ptr ds:[_tssException.mSs],rwData32Seg
+mov dword ptr ds:[_tssException.mDs],rwData32Seg
+mov dword ptr ds:[_tssException.mEs],rwData32Seg
+mov dword ptr ds:[_tssException.mFs],rwData32Seg
+mov dword ptr ds:[_tssException.mGs],rwData32Seg
+mov dword ptr ds:[_tssException.mEax],0
+mov dword ptr ds:[_tssException.mEcx],0
+mov dword ptr ds:[_tssException.mEdx],0
+mov dword ptr ds:[_tssException.mEbx],0
+mov dword ptr ds:[_tssException.mEsi],0
+mov dword ptr ds:[_tssException.mEdi],0
+mov dword ptr ds:[_tssException.mPrev],0
+mov dword ptr ds:[_tssException.mEflags],0
+mov dword ptr ds:[_tssException.mCr3],PDE_ENTRY_VALUE
+mov dword ptr ds:[_tssException.mLdt],0
+mov word ptr ds:[_tssException.mTrap],0
+mov byte ptr ds:[_tssException.mIomapEnd],0ffh
+mov word ptr ds:[_tssException.mIomap],104
 
 mov eax,kernelData
 shl eax,4
-add eax,offset _tssExp
+add eax,offset _tssException
 mov word ptr ds:[kTssExpDescriptor + 2],ax
 shr eax,16
 mov byte ptr ds:[kTssExpDescriptor + 4],al
@@ -467,7 +467,7 @@ shr eax,16
 mov word ptr ds:[tSysSvcEntry + 6],ax
 mov word ptr ds:[tSysSvcEntry + 2],reCode32Seg
 
-
+comment *
 mov eax,kernel
 shl eax,4
 add eax,offset __int13hProc
@@ -516,7 +516,7 @@ mov word ptr ds:[kTssInt13hDescriptor],sizeof TASKSTATESEG -1
 
 mov ax,kTssInt13hSelector
 mov word ptr ds:[tInt13Entry + 2],ax
-
+*
 
 
 add esp,40h
