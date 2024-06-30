@@ -26,7 +26,7 @@ mov edx,0
 mov ebx,0
 mov esi,0
 mov edi,0
-mov esp,(KERNEL_TASK_STACK_BASE + KERNEL_TASK_STACK_SIZE - STACK_TOP_DUMMY)
+mov esp,KERNEL_TASK_STACK_TOP
 mov ebp,esp
 
 mov ebx,kernelData

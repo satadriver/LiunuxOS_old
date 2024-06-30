@@ -41,9 +41,10 @@ mov eax,dword ptr ds:[ebx + _kTaskSchedule]
 call eax
 add esp,4
 
-
+IFDEF SINGLE_TASK_TSS
 mov eax,ds:[CURRENT_TASK_TSS_BASE + TASKSTATESEG.mCr3]
 mov cr3,eax
+ENDIF
 
 mov al,20h
 out 20h,al
