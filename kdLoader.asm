@@ -1,8 +1,8 @@
 .386p
 include pe.ASM
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 
 ;8 function name
@@ -306,4 +306,4 @@ __CheckPE proc near
 __CheckPE endp
 
 
-kernel ends
+Kernel32 ends

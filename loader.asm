@@ -66,7 +66,19 @@ Loader segment para use16
 	jnz _readMbrErr
 
 	call near ptr _readMbrOK
-
+	
+	push word ptr 0ah
+	lea ax, wmbrPrompt
+	push ax
+	push cs
+	call __showMsg
+	add sp,6
+	
+	mov ah,0
+	int 16h
+	cmp al,1bh
+	jz __readKernel
+	
 	mov byte ptr cs:[patlen],10h
 	mov byte ptr cs:[reserved],0
 	mov word ptr cs:[seccnt],1
@@ -108,7 +120,7 @@ comment *
 	cmp ah,0
 	jnz _readFontErr
 *
-
+__readKernel:
 	mov byte ptr cs:[patlen],10h
 	mov byte ptr cs:[reserved],0
 	mov ax, word ptr es:[KERNEL_SEC_CNT]
@@ -503,6 +515,7 @@ wbmbrok 	db 'rewrite bak mbr ok',0
 wbmbrerr 	db 'rewrite bak mbr error',0
 rkerok 		db 'read kernel ok',0
 rkererr 	db 'read kernel error',0
+wmbrPrompt 	db 'Press any other key to restore MBR,press ESC to skip...',0
 
 Loader ends
 end start

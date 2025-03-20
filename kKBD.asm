@@ -8,8 +8,8 @@
 ;最简单是用xlat指令
 ;将ds:[BX]为首地址的,偏移地址为AL的内容送给AL
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 align 10h
 __kKeyBoardProc proc
@@ -444,7 +444,7 @@ __scancode2Ascii endp
 
 
 
-Kernel ends
+Kernel32 ends
 
 
 

@@ -268,7 +268,7 @@ in al,21h
 mov ah,al
 in al,0a1h
 xchg ah,al
-mov ds:[_rmMode8259Mask],ax
+;mov ds:[_rmMode8259Mask],ax
 
 ;icw1
 mov al,11h
@@ -313,13 +313,13 @@ out 0a1h,al
 ; The cascade channel, IRQ2, heart beat timer (IRQ0), and keyboard controller (IRQ1), cannot be put into level mode
 mov dx,4d0h
 in al,dx
-mov byte ptr ds:[_rmPicElcr],al
+;mov byte ptr ds:[_rmPicElcr],al
 mov al,0
 out dx,al
 
 mov dx,4d1h
 in al,dx
-mov byte ptr ds:[_rmPicElcr+1],al
+;mov byte ptr ds:[_rmPicElcr+1],al
 mov al,0
 out dx,al
 
@@ -353,11 +353,11 @@ out 21h,al
 out 0a1h,al
 
 mov dx,4d0h
-mov al,byte ptr ds:[_rmPicElcr]
+;mov al,byte ptr ds:[_rmPicElcr]
 out dx,al
 
 mov dx,4d1h
-mov al,byte ptr ds:[_rmPicElcr+1]
+;mov al,byte ptr ds:[_rmPicElcr+1]
 out dx,al
 
 pop edx

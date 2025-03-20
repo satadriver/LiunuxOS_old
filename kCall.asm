@@ -1,7 +1,7 @@
 .386p
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 ;useless function
 __callGateEntry proc
@@ -22,4 +22,4 @@ popad
 ret
 __callGateEntry endp
 
-Kernel ends
+Kernel32 ends

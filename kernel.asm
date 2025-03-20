@@ -51,7 +51,7 @@ mov ss,ax
 mov eax,ss
 shl eax,16
 mov ax,sp
-mov dword ptr ds:[_realModeStack],eax
+;mov dword ptr ds:[_realModeStack],eax
 
 push word ptr 0ch
 push offset _kernel16Start
@@ -72,25 +72,64 @@ push cs
 call __textModeShow16
 add esp,6
 
+push ds
+mov ax,0
+mov ds,ax
+xor eax,eax
+mov ax,KERNEL16
+shl eax,16
+mov ax,offset __v86ProcEnd
+mov dword ptr ds:[20h*4],eax
+mov dword ptr ds:[21h*4],eax
+pop ds
 
+cmp ds:[text_mode_tag],1
+jz __toTextModeScreen
+
+;IFDEF TEXTMODE_TAG
+;ELSE
+;ENDIF
 call __initVideo
+jmp __setTextVideoEnd
 
-call __initDevices
+__toTextModeScreen:
+mov ax,4f02h
+mov bx,4003h
+int 10h
+jmp __setTextVideoEnd
+
+__setTextVideoEnd:
+;call __initDevices
 
 call __initGDT
 
-call __initIDT
+;call __initIDT
 
 push ds
-mov eax,kernel
+push es
+mov eax,Kernel32
 mov ds,ax
 shl eax,4
 add eax,offset __kernel32Entry
 mov dword ptr ds:[__kernel32EntryOffset],eax
-;mov eax,Kernel
-;shl eax,4
-;add eax,offset _int13RetPm32
-;mov dword ptr ds:[__int13RetPm32EIP],eax
+
+mov eax,Kernel32
+mov ds,ax
+shl eax,4
+add eax,offset __initAP32Entry
+mov dword ptr ds:[__initAP32EntryOffset],eax
+
+mov ax,kernel16
+mov ds,ax
+mov esi,offset __initAP16
+mov eax,AP_INIT_SEG
+mov es,ax
+mov edi,AP_INIT_OFFSET
+mov ecx,__initAP16Size
+cld 
+rep movsb
+
+pop es
 pop ds
 
 ;开机后cr0默认为10h et=1 浮点处理器存在,且bit4不可写
@@ -101,6 +140,10 @@ db 0fh,22h,0e0h
 
 ;enable a20 line
 ;in al,0eeh
+
+call __enableA20
+
+cli
 
 mov eax,cr0
 or al,1
@@ -149,7 +192,7 @@ mov ss,ax
 mov esp,BIT16_STACK_TOP
 mov ebp,esp
 
-lss sp, DWORD PTR ds:[_realModeStack]
+;lss sp, DWORD PTR ds:[_realModeStack]
 
 call __disableA20
 
@@ -166,6 +209,41 @@ sti
 mov ah,4ch
 int 21h
 _kernel16Entry endp
+
+
+__initAP16 proc
+	cli
+	mov eax, kerneldata
+	mov ds,ax
+	mov es,ax
+	mov fs,ax
+	mov gs,ax
+	mov ss,ax
+
+	mov esp, BIT16_STACK_TOP
+	mov ebp,esp
+
+	in al,92h
+	or al,2
+	out 92h,al
+	
+	call __enableA20
+	
+	lgdt fword ptr ds:[gdtReg]
+
+	mov eax,cr0
+	or eax,1
+	mov cr0,eax
+
+	_pmInitAPEntry 			db 0eah
+	_pmInitAPEntryOffset	dw __initAP32
+	_pmInitAPEntrySelector	dw reCode32TempSeg
+
+__initAP16 endp
+
+__initAP16Size equ $ - __initAP16
+
+
 
 
 
@@ -193,7 +271,7 @@ mov byte ptr ds:[ldtDescriptor +4],al
 mov byte ptr ds:[ldtDescriptor +7],ah
 mov word ptr ds:[ldtDescriptor],0ffffh
 
-mov eax,Kernel
+mov eax,Kernel32
 shl eax,4
 add eax,offset __callGateEntry
 mov word ptr ds:[callGateDescriptor],ax
@@ -215,7 +293,7 @@ mov word ptr ds:[rwData16Descriptor+2],ax
 shr eax,16
 mov byte ptr ds:[rwData16Descriptor +4],al
 
-mov eax,Kernel
+mov eax,Kernel32
 shl eax,4
 mov word ptr ds:[reCode32TempDescriptor+2],ax
 shr eax,16
@@ -228,7 +306,7 @@ add eax,offset gdtNullDescriptor
 mov dword ptr ds:[gdtReg + 2],eax
 mov word ptr ds:[gdtReg ],gdtLimit
 
-sgdt fword ptr ds:[_rmGdtReg]
+;sgdt fword ptr ds:[_rmGdtReg]
 
 lgdt fword ptr ds:[gdtReg]
 
@@ -361,8 +439,6 @@ push edi
 call __sectorReader
 add esp,10
 
-
-
 _readVsDllMain:
 mov ebx,VSMAINDLL_LOAD_SEG
 mov edi,ds:[esi + DATALOADERSECTOR._maindllSecOff]
@@ -396,9 +472,6 @@ push edi
 call __sectorReader
 add esp,10
 
-
-
-
 _readVsDllFont:
 push word ptr GRAPHFONT_LOAD_OFFSET
 push word ptr GRAPHFONT_LOAD_SEG
@@ -421,6 +494,27 @@ ret
 __loadAllFiles endp
 
 
+
+__v86ProcEnd proc
+
+mov ax,kernelData
+mov ds,ax
+mov es,ax
+mov ax,4f02h
+xor ebx,ebx
+mov bx,ds:[_videoMode]
+or bx,0c000h
+int 10h
+
+sti
+;iret
+
+__v86ProcEndLoop:
+jmp __v86ProcEndLoop
+
+__v86ProcEndLoop2:
+jmp __v86ProcEndLoop2
+__v86ProcEnd endp
 
 
 _kernel16Start db 'kernel start',0

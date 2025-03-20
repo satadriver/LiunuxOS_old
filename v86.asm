@@ -3,7 +3,8 @@
 Kernel Segment public para use32
 assume cs:Kernel
 
-
+;useless function
+comment *
 __initV86Tss proc 
 push ecx
 push edx
@@ -63,6 +64,7 @@ pop ecx
 ret
 __initV86Tss endp
 
+*
 
 
 
@@ -120,42 +122,13 @@ Kernel ends
 
 
 Kernel16 Segment public para use16
+
 assume cs:Kernel16
 
-;pushad or popfd will cause GP protection exp
-align 10h
 __v86VMIntrProc proc
-
-mov eax,0
-mov ds,ax
-mov es,ax
-
-;set int21h
-mov eax,Kernel16
-shl eax,16
-mov ax,offset __v86Int21hProc
-mov ecx,21h
-shl ecx,2
-mov dword ptr ds:[ecx],eax
-
-;set int20h
-mov eax,Kernel16
-shl eax,16
-mov ax,offset __v86Int20hProc
-mov ecx,20h
-shl ecx,2
-mov dword ptr ds:[ecx],eax
 
 mov ax,V86VMIPARAMS_SEG
 mov fs,ax
-mov ax,Kernel16
-mov gs,ax
-mov ax,kernelData
-mov ds,ax
-mov es,ax
-mov ax,KERNEL_BASE_SEGMENT
-mov ss,ax
-mov esp,BIT16_STACK_TOP
 
 mov byte ptr fs:[V86VMIPARAMS_OFFSET + V86VMIPARAMS._work],0
 
@@ -164,21 +137,18 @@ mov ax,V86VMIPARAMS_SEG
 mov fs,ax
 mov ax,Kernel16
 mov gs,ax
-mov ax,kernelData
-mov ds,ax
-mov es,ax
 mov ax,KERNEL_BASE_SEGMENT
 mov ss,ax
 mov esp,BIT16_STACK_TOP
-
-mov ecx,8
+;sti
+mov ecx,256
 _v86Wait:
+
+;hlt
 nop
 ;fwait 指令会触发异常？
 ;fwait
 ;pause 指令会触发异常？
-;db 0f3h,90h
-;db 0f3h,90h
 ;db 0f3h,90h
 loop _v86Wait
 
@@ -186,17 +156,9 @@ cmp byte ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._work],0
 jz _v86VmIntCheckRequest
 
 mov al,byte ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._intNumber]
-cmp al,3
-jz _v86VMInt3
 mov byte ptr gs:[_v86VMIntNumber],al
 mov byte ptr gs:[_v86VMIntOpcode],0cdh
-jmp _v86VMIntSetRegs
 
-_v86VMInt3:
-mov byte ptr gs:[_v86VMIntOpcode],0cch
-mov byte ptr gs:[_v86VMIntNumber],90h
-
-_v86VMIntSetRegs:
 push word ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._ds]
 pop ds
 push word ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._es]
@@ -209,38 +171,53 @@ mov ebx,dword ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._ebx]
 mov esi,dword ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._esi]
 mov edi,dword ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._edi]
 
-;stc
 _v86VMIntOpcode:
 db 0cdh
 _v86VMIntNumber:
 db 13h
 
-jc _V86VMIWorkError
+push word ptr V86VMIPARAMS_SEG
+pop fs
+push word ptr Kernel16
+pop gs
 
-;cmp ah,0
-;jnz _V86VMIWorkError
+jc _checkV86CarryError
+;cmp ah,0					;ax=41h, bx=55aah not support,whenever succucess or failure, ah is not 0
+;jnz _checkV86CarryError
 
-mov ax,V86VMIPARAMS_SEG
-mov fs,ax
-mov dword ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._result],1
-jmp _V86VMIWorkOK
+jmp _V86VMIWorkOk
+
+_checkV86CarryError:
+cmp byte ptr gs:[_v86VMIntNumber],13h
+jz _V86VMIWorkError
+
+jmp _V86VMIWorkOk
 
 _V86VMIWorkError:
-mov ax,V86VMIPARAMS_SEG
-mov fs,ax
 mov dword ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._result],0
+jmp _V86VMIComplete
 
-_V86VMIWorkOK:
+_V86VMIWorkOk:
+mov dword ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._result],1
+
+_V86VMIComplete:
 mov byte ptr fs:[V86VMIPARAMS_OFFSET +V86VMIPARAMS._work],0
+
+;int 3
 
 jmp _v86VmIntCheckRequest
 
-__v86VMIntIretdAddr:
-;iretd will cause GP exception
 iretd
+
+jmp _v86VmIntCheckRequest
+
+db 16 dup (0)
+__v86VMIntrProcEnd equ $
 __v86VMIntrProc endp
 
-align 10h
+
+
+
 __v86VMLeave proc
 MOV AX,KernelData
 MOV DS,AX
@@ -250,20 +227,20 @@ MOV AX,4F02H
 INT 10H
 CMP AX,4FH
 
-	mov eax,dword ptr ss:[esp + TASKDOSPARAMS.address]
-	
-	mov edx,eax
-	shr eax,4
-	mov ds,ax
-	and edx,0fh
-	mov dword ptr ds:[edx + DOS_PE_CONTROL.status],DOS_THREAD_TERMINATE_CONTROL_CODE
-	_v86LeaveWait:
-	nop
-	jmp _v86LeaveWait
+mov eax,dword ptr ss:[esp + TASKDOSPARAMS.address]
+
+mov edx,eax
+shr eax,4
+mov ds,ax
+and edx,0fh
+mov dword ptr ds:[edx + DOS_PE_CONTROL.status],DOS_THREAD_TERMINATE_CONTROL_CODE
+_v86LeaveWait:
+nop
+jmp _v86LeaveWait
 __v86VMLeave endp
 
 
-
+comment *
 __v86Int20hProc proc
 pushad
 push ds
@@ -290,12 +267,12 @@ push cx
 push edx
 push si
 
-mov eax,dword ptr es:[si+DOS_PE_CONTROL.address]
-cmp edx,eax
-jb ___v86Int21ProcNotFoundCs
-add eax,1000h
-cmp edx,eax
-ja ___v86Int21ProcNotFoundCs
+;mov eax,dword ptr es:[si+DOS_PE_CONTROL.address]
+;cmp edx,eax
+;jb ___v86Int21ProcNotFoundCs
+;add eax,1000h
+;cmp edx,eax
+;ja ___v86Int21ProcNotFoundCs
 
 pop si
 pop edx
@@ -336,12 +313,12 @@ pop ds
 popad
 iret
 __v86Int20hProc endp
+*
 
 
 
 
-
-
+comment *
 __v86Int21hProc proc
 pushad
 push ds
@@ -418,34 +395,18 @@ popad
 iret
 __v86Int21hProc endp
 
-
+*
 
 __v86TssProc proc
-mov ax,KernelData
-mov ds,ax
-mov es,ax
-mov fs,ax
-mov gs,ax
-mov ss,ax
-mov sp,BIT16_STACK_TOP
 
-mov eax,ds:[_v86_number]
-mov byte ptr ds:[__v86TssProc_command],al
-
-mov eax,ds:[_v86_eax]
-mov ecx,ds:[_v86_ecx]
-mov edx,ds:[_v86_edx]
-mov ebx,ds:[_v86_ebx]
-mov esi,ds:[_v86_esi]
-mov edi,ds:[_v86_edi]
-db 0cdh
-__v86TssProc_command:
-db 10h
-iretd
+;mov ax,3
+;int 10h
+iret
 jmp __v86TssProc
 __v86TssProc endp
 
 
+comment *
 __restoreScreen proc
 	push ax
 	push cx
@@ -475,6 +436,75 @@ __restoreScreen proc
 	pop ax
 	ret
 __restoreScreen endp
+*
+
+
+__v86Process proc
+;cli
+mov eax,V86_INT_SEG
+mov fs,ax
+
+mov ax,kernel16
+mov gs,ax
+
+mov eax,KERNEL_BASE_SEGMENT
+mov ss,ax
+
+mov esp,BIT16_STACK_TOP
+mov ebp,esp
+
+mov eax,kernel
+mov eax,KernelData
+
+mov eax,fs:[V86_INT_OFFSET + 32]
+mov gs:[int_cmd],al
+
+mov eax,fs:[V86_INT_OFFSET + 24]
+mov ds,ax
+
+mov eax,fs:[V86_INT_OFFSET + 28]
+mov es,ax
+
+mov eax,fs:[V86_INT_OFFSET]
+mov ecx,fs:[V86_INT_OFFSET + 4]
+mov edx,fs:[V86_INT_OFFSET + 8]
+mov ebx,fs:[V86_INT_OFFSET + 12]
+mov esi,fs:[V86_INT_OFFSET + 16]
+mov edi,fs:[V86_INT_OFFSET + 20]
+
+		db 0cdh
+int_cmd db 13h
+
+push word ptr V86_INT_SEG
+pop fs
+push word ptr Kernel16
+pop gs
+
+JC _CHECK_INT255_ERROR
+;cmp ah,0
+;jnz _CHECK_INT255_ERROR
+
+JMP _INT255_RESULT_OK
+
+_CHECK_INT255_ERROR:
+CMP BYTE PTR gs:[int_cmd],13H
+JNZ _INT255_RESULT_OK
+mov dword ptr fs:[V86_INT_OFFSET + 36],0
+jmp _int255_complete
+
+_INT255_RESULT_OK:
+mov dword ptr fs:[V86_INT_OFFSET + 36],1
+
+_int255_complete:
+nop
+int 3
+;int 254
+jmp __v86Process
+
+iretd
+jmp __v86Process
+__v86Process endp
+
 
 
 Kernel16 ends

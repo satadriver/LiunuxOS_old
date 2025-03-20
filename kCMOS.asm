@@ -2,8 +2,8 @@
 
 CMOS_ALARM_MINUTE_INTERVAL EQU 3
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 
 ;0ch
@@ -443,4 +443,4 @@ __getCmosAlarmParams endp
 
 
 
-Kernel ends
+Kernel32 ends

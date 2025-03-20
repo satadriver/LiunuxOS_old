@@ -5,8 +5,8 @@
 ;comment
 
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 ;param:string
 __hexstr2int  proc
@@ -626,4 +626,4 @@ ret
 __getDaysOfMonth endp
 
 
-Kernel Ends
+Kernel32 Ends

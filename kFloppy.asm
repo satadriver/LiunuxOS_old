@@ -2,8 +2,8 @@
 
 
 ;interrupption 46h
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 __kFloppyProc proc
 pushad
@@ -69,4 +69,4 @@ popad
 iretd
 __kFloppyProc endp
 
-Kernel ends
+Kernel32 ends

@@ -5,8 +5,8 @@ include descriptor.asm
 
 
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 align 10h
 __iSystemTimerProc proc
@@ -126,4 +126,4 @@ _timerShowInfo endp
 ;retn 	== c3
 ;retf 	== cb
 
-Kernel ends
+Kernel32 ends

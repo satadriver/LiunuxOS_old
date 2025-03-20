@@ -2,8 +2,8 @@
 
 
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 
 __kParallelProc proc
@@ -36,4 +36,4 @@ popad
 iretd
 __kParallelProc endp
 
-Kernel ends
+Kernel32 ends

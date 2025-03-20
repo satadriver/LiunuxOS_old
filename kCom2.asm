@@ -1,8 +1,8 @@
 .386p
 
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 
 __kCom2Proc proc
@@ -53,4 +53,4 @@ popad
 iretd
 __kCom2Proc endp
 
-Kernel ends
+Kernel32 ends

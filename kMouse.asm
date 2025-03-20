@@ -1,8 +1,8 @@
 .386p
 
 ;include 8042_8048_info.asm
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 ;mouse direction is from left,top to right down,so the x delta is right,but y delta is negtive
 align 10h
@@ -590,4 +590,4 @@ __mouseService endp
 
 
 
-Kernel ends
+Kernel32 ends

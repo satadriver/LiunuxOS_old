@@ -2,8 +2,8 @@
 
 
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 
 __kCoProcessorProc proc
@@ -70,7 +70,7 @@ popad
 iretd
 __kCoProcessorProc endp
 
-Kernel ends
+Kernel32 ends
 
 
 ;整数 (CPU) 和 FPU 是相互独立的单元，因此，在执行整数和系统指令的同时可以执行浮点指令。这个功能被称为并行性(concurrency)，当发生未屏蔽的浮点异常时，

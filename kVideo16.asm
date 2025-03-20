@@ -23,7 +23,11 @@ __getVesaMode proc
 	PUSH DS
 	PUSH ES
 	
+	mov ebp,ESP
+	
 	SUB ESP,200H
+	
+	mov ss:[ebp - 4],0
 	
 	mov ebx,offset _videoTypes
 	
@@ -88,7 +92,7 @@ __getVesaMode proc
 	ja __getVesaMode_checkmode
 	
 	mov ax,es:[di + VESAInformation.XRes]
-	cmp ax,1280
+	cmp ax,640
 	jb __getVesaMode_checkmode
 	cmp ax,1600
 	ja __getVesaMode_checkmode
@@ -98,7 +102,7 @@ __getVesaMode proc
 	jnz __getVesaMode_checkmode
 	
 	mov cx,es:[di + VESAInformation.YRes]
-	cmp cx,960
+	cmp cx,480
 	jb __getVesaMode_checkmode
 	cmp cx,1200
 	ja __getVesaMode_checkmode
@@ -125,6 +129,8 @@ __getVesaMode proc
 	
 	movzx eax,es:[di + VESAInformation.OffScreenMemSize]
 	mov es:[ebx +12],eax
+	
+	inc dword ptr ss:[ebp - 4]
 		
 	add ebx,16
 	mov eax,ebx
@@ -141,6 +147,7 @@ __getVesaMode proc
 	mov es:[_videoMode],ax
 	
 	mov eax,ebx
+	mov eax,ss:[ebp - 4]
 	
 	ADD ESP,200H
 	POP ES
@@ -730,7 +737,16 @@ __initVideo proc
 	mov word ptr ds:[_textShowPos],0
 	
 	call __getVesaMode
-
+	cmp eax,0
+	jnz __checkVideoMode
+	
+	mov ax,3
+	int 10h
+	mov eax,0
+	mov dword ptr ds:[text_mode_tag],1
+	jmp __initVideoOver
+	
+__checkVideoMode:
 	mov bx,sp
 	;add bx,200h
 	

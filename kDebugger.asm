@@ -22,8 +22,8 @@ INT3_BREAKPOINT			EQU 7
 ;OF=1
 
 
-Kernel segment para use32
-assume cs:Kernel
+Kernel32 segment para use32
+assume cs:Kernel32
 
 
 align 10h
@@ -141,4 +141,4 @@ iretd
 __tBreakPointProc endp
 
 
-Kernel ends
+Kernel32 ends

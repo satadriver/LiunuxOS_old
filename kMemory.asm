@@ -1,8 +1,8 @@
 .386p
 
 
-Kernel Segment public para use32
-assume cs:Kernel
+Kernel32 Segment public para use32
+assume cs:Kernel32
 
 ;页目录表必须位于一个自然页内(4KB对齐), 故其物理地址的低12位是全0
 __initPageTable proc
@@ -56,7 +56,7 @@ __startPage endp
 
 
 
-Kernel ends
+Kernel32 ends
 
 
 
