@@ -1,3 +1,7 @@
+new project address:https://github.com/satadriver/LiunuxOS
+
+This project is obsolte,the new address is: https://github.com/satadriver/LiunuxOS
+
 # LiunuxOS
 
 liunuxos包含两个工程，liunuxos和liunuxos_c。liunuxos是基于masm的汇编代码，liunuxos_c是基于vs的c、c++代码。
